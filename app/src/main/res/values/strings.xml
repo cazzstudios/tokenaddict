@@ -19,26 +19,23 @@
 
     <string-array name="notification_reset_messages">
         <item>[agent] had an excellent nap! Ready to go back to work.</item>
-        <item>[agent]\'s break is over. Put [agent] to work!</item>
+        <item>[agent]\'s break is over, and yours is too. Go back to work!</item>
         <item>[agent] limits reset! What are you waiting for?</item>
-        <item>An unused token is a wasted token - and [agent] now has unused tokens.</item>
-        <item>[agent] is back from vacation and ready to assist!</item>
+        <item>An unused token is a wasted token. [agent] has unspent tokens. Stop wasting tokens.</item>
+        <item>[agent] is back from vacation. </item>
         <item>Fresh tokens for [agent] - let the prompting begin!</item>
-        <item>[agent] missed you! Come chat with [agent] again!</item>
+        <item>[agent] missed you! Stop pretending you have better things to do and come have a chat!</item>
         <item>Your dose of [agent] is ready and waiting!</item>
-        <item>[agent] has been recharged. Unleash the knowledge!</item>
-        <item>The tokens flow once more! [agent] is at your service.</item>
-        <item>[agent] was getting lonely. Time to put your favourite collaborator to work!</item>
-        <item>New tokens unlocked! [agent] can finally stretch [agent]\'s digital wings!</item>
-        <item>[agent] is awake and has opinions about everything!</item>
-        <item>Reset complete! [agent] promises to behave... mostly.</item>
-        <item>Your personal [agent] has finished its power nap!</item>
+        <item>[agent] has been recharged. </item>
+        <item>The tokens flow once more! Your doubts and bugs are ready to be crushed!</item>
+        <item>Your favourite collaborator is getting lonely! Put [agent] to work.</item>        
         <item>[agent] is caffeinated and ready to code!</item>
-        <item>The great token drought is over! [agent] rejoices!</item>
-        <item>[agent] was dreaming of electric sheep. Now [agent] dreams of prompts!</item>
-        <item>Freshly baked tokens for your favorite [agent]!</item>
-        <item>[agent] is officially back in business! What shall we conquer?</item>
+        <item>The great token drought is over! [agent] at your service!</item>
+        <item>Does [agent] dream of electric sheep? No longer - he now dreams of prompts!</item>
+        <item>Freshly baked tokens for [agent]! Waste no time!</item>
+        <item>You should beat the iron while it\'s hot, and [agent]\'s very hot!</item>
         <item>Blaming lack of results on usage limits? No excuses now, [agent] is back in business!</item>
+        <item>Stop wasting time with humans. [agent] is ready for your prompts.</item>
     </string-array>
 
     <!-- Main Activity -->
