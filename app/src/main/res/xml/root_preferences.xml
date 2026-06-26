@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <SeekBarPreference
+        android:key="polling_interval"
+        android:title="@string/polling_interval_title"
+        android:summary="@string/polling_interval_summary"
+        android:icon="@drawable/ic_timer"
+        android:min="5"
+        android:max="120"
+        android:defaultValue="30"
+        app:showSeekBarValue="true"
+        app:seekBarIncrement="1"
+        app:updatesContinuously="false" />
+
+    <SwitchPreferenceCompat
+        android:key="notification_enabled_claude"
+        android:title="@string/notification_enabled_claude_title"
+        android:summary="@string/notification_enabled_claude_summary"
+        android:icon="@drawable/ic_bell"
+        android:defaultValue="true" />
+
+    <SwitchPreferenceCompat
+        android:key="notification_enabled_kimi"
+        android:title="@string/notification_enabled_kimi_title"
+        android:summary="@string/notification_enabled_kimi_summary"
+        android:icon="@drawable/ic_bell"
+        android:defaultValue="true" />
+
+    <SwitchPreferenceCompat
+        android:key="notification_sound"
+        android:title="@string/notification_sound_title"
+        android:summary="@string/notification_sound_summary"
+        android:icon="@drawable/ic_volume"
+        android:defaultValue="true" />
+
+    <Preference
+        android:key="battery_optimization"
+        android:title="@string/battery_optimization_title"
+        android:summary="@string/battery_optimization_summary"
+        android:icon="@drawable/ic_battery"
+        android:enabled="true" />
+
+    <Preference
+        android:key="about"
+        android:title="@string/about_title"
+        android:summary="@string/about_summary"
+        android:icon="@drawable/ic_info" />
+
+</PreferenceScreen>

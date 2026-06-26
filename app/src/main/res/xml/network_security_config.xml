@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network Security Configuration
+
+  Pins are SHA-256 SPKI hashes fetched via openssl on 2026-06-24.
+  Each domain has two pins: the leaf certificate and its intermediate CA.
+  This ensures continuity across certificate renewals (intermediate stays stable
+  while leaf rotates) and provides a backup if either certificate changes.
+
+  IMPORTANT: Before releasing to production, verify pins match live certificates
+  by running:
+    echo | openssl s_client -connect DOMAIN:443 -showcerts 2>/dev/null
+  and extracting SPKI hashes from each certificate in the chain.
+
+  Pin expiration: 2027-12-31 — renew pins before this date.
+-->
+<network-security-config>
+
+    <!-- Block all cleartext (HTTP) traffic globally -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+      claude.ai / www.claude.ai
+      CA: Let's Encrypt (E8 intermediate)
+      Fetched: 2026-06-24
+    -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">claude.ai</domain>
+        <pin-set expiration="2027-12-31">
+            <!-- Leaf certificate (claude.ai) -->
+            <!-- Source: fetched from live TLS cert on 2026-06-24 -->
+            <pin digest="SHA-256">RVJ9maMywSmP1W5/pu+utbu4Y9lFXHzRzplyqdyTcgw=</pin>
+            <!-- Intermediate CA: Let's Encrypt E8 -->
+            <!-- Source: fetched from live TLS chain on 2026-06-24 -->
+            <pin digest="SHA-256">iFvwVyJSxnQdyaUvUERIf+8qk7gRze3612JMwoO3zdU=</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!--
+      anthropic.com
+      CA: Let's Encrypt (YE2 intermediate)
+      Fetched: 2026-06-24
+    -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">anthropic.com</domain>
+        <pin-set expiration="2027-12-31">
+            <!-- Leaf certificate (anthropic.com) -->
+            <!-- Source: fetched from live TLS cert on 2026-06-24 -->
+            <pin digest="SHA-256">kVF+9P/4y/Q06iaooniYqluxGLrB/g7+KPxebqvny0Q=</pin>
+            <!-- Intermediate CA: Let's Encrypt YE2 -->
+            <!-- Source: fetched from live TLS chain on 2026-06-24 -->
+            <pin digest="SHA-256">s/tdAOmUzd8syaTuqfgGvFcn6DzA5Cmb+Vby1ST+U3Y=</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!--
+      auth.kimi.com
+      CA: Google Trust Services (WE1 intermediate)
+      Fetched: 2026-06-24
+    -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">auth.kimi.com</domain>
+        <pin-set expiration="2027-12-31">
+            <!-- Leaf certificate (auth.kimi.com) -->
+            <!-- Source: fetched from live TLS cert on 2026-06-24 -->
+            <pin digest="SHA-256">aE6bN2jN56QtKx7BxFG3xwxDUkHennmtdhmXl81CU60=</pin>
+            <!-- Intermediate CA: Google Trust Services WE1 -->
+            <!-- Source: fetched from live TLS chain on 2026-06-24 -->
+            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!--
+      api.kimi.com
+      CA: Google Trust Services (WE1 intermediate)
+      Fetched: 2026-06-24
+    -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">api.kimi.com</domain>
+        <pin-set expiration="2027-12-31">
+            <!-- Leaf certificate (api.kimi.com) -->
+            <!-- Source: fetched from live TLS cert on 2026-06-24 -->
+            <pin digest="SHA-256">yMpIHG4SFY2KfO+qJZaqfJLVrX/kEZgShenjfEs2y5A=</pin>
+            <!-- Intermediate CA: Google Trust Services WE1 -->
+            <!-- Source: fetched from live TLS chain on 2026-06-24 -->
+            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+        </pin-set>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+</network-security-config>

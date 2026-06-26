@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Token Addict</string>
+
+    <!-- Notification Channels -->
+    <string name="channel_reset_name">Pianificazione Reset</string>
+    <string name="channel_reset_description">Notifiche sul reset del limite di utilizzo di Token Addict</string>
+    <string name="channel_limit_name">Avvisi Limite</string>
+    <string name="channel_limit_description">Notifiche quando si avvicina ai limiti di utilizzo di Token Addict</string>
+
+    <!-- Notifications -->
+    <string name="notification_reset_title">Limite Utilizzo Reset</string>
+    <string name="notification_reset_message">Il tuo limite di utilizzo di Claude \u00e8 stato reimpostato. Tocca per controllare.</string>
+
+    <!-- Main Activity -->
+    <string name="loading">Caricamento\u2026</string>
+    <string name="please_log_in">Accedi a Claude.ai</string>
+    <string name="log_in">Accedi</string>
+    <string name="refresh_now">Aggiorna Ora</string>
+    <string name="logout">Esci</string>
+    <string name="resets_at">Reset alle: %s</string>
+    <string name="last_checked">Ultimo controllo: %s</string>
+    <string name="resets_in">si resetta tra %s</string>
+    <string name="claude_service_changed_title">Problema integrazione Claude</string>
+    <string name="claude_service_changed_message">Claude.ai potrebbe essere cambiato. I dati di utilizzo potrebbero non essere disponibili fino all\u2019aggiornamento dell\u2019app.</string>
+
+    <!-- Settings -->
+    <string name="settings">Impostazioni</string>
+    <string name="polling_interval_title">Intervallo di Polling</string>
+    <string name="polling_interval_summary">Minuti tra i controlli di utilizzo</string>
+    <string name="notification_sound_title">Suono Notifica</string>
+    <string name="notification_sound_summary">Riproduci suono quando il limite viene reimpostato</string>
+    <string name="notification_enabled_claude_title">Notifiche Reset Claude</string>
+    <string name="notification_enabled_claude_summary">Notifica quando il limite di utilizzo di Claude viene reimpostato</string>
+    <string name="notification_enabled_kimi_title">Notifiche Reset Kimi</string>
+    <string name="notification_enabled_kimi_summary">Notifica quando il limite di utilizzo di Kimi viene reimpostato</string>
+    <string name="battery_optimization_title">Ottimizzazione Batteria</string>
+    <string name="battery_optimization_summary">Disabilita l’ottimizzazione della batteria per notifiche affidabili</string>
+    <string name="about_title">Informazioni</string>
+    <string name="about_summary">Token Addict v1.0</string>
+
+    <!-- Content Descriptions -->
+    <string name="session_expired_title">Sessione Scaduta</string>
+    <string name="session_expired_message">La tua sessione \u00e8 scaduta \u2014 tocca per riaccedere.</string>
+    <string name="reset_ready_title">Pronto all\u2019Uso</string>
+    <string name="reset_ready_message">Il tuo limite di utilizzo \u00e8 stato reimpostato. Tocca per controllare.</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_utilization_progress">Barra di progresso dell\u2019utilizzo</string>
+    <string name="cd_loading">Indicatore di caricamento</string>
+    <string name="cd_working_robot">Working robot icon</string>
+    <string name="cd_resting_robot">Resting robot icon</string>
+
+    <!-- Formats -->
+    <string name="format_with_reset">%1$s, %2$s</string>
+
+    <!-- Login Activity -->
+    <string name="n_a">N/D</string>
+    <string name="webview_error">Impossibile caricare la pagina. Controlla la connessione e riprova.</string>
+    <string name="retry">Riprova</string>
+
+    <!-- Provider Names -->
+    <string name="provider_claude">Claude</string>
+    <string name="provider_kimi">Kimi Code</string>
+    <string name="please_log_in_kimi">Accedi a Kimi Code</string>
+
+    <!-- Kimi Notification -->
+    <string name="notification_reset_message_kimi">Il tuo limite di utilizzo di Kimi \u00e8 stato reimpostato. Tocca per controllare.</string>
+
+    <!-- Kimi Login Activity -->
+    <string name="kimi_login_title">Accedi a Kimi Code</string>
+    <string name="kimi_requesting_code">Richiesta codice dispositivo\u2026</string>
+    <string name="kimi_open_browser">Apri Browser</string>
+    <string name="kimi_code_copied">Codice copiato negli appunti</string>
+    <string name="kimi_code_expired">Codice scaduto. Tocca per riprovare.</string>
+    <string name="kimi_access_denied">Autorizzazione negata.</string>
+    <string name="kimi_request_failed">Errore: %s</string>
+    <string name="kimi_poll_error">Errore di polling: %s</string>
+    <string name="kimi_retry">Riprova</string>
+    <string name="kimi_webview_helper">Se il pulsante di invio non è visibile, premi Invio sulla tastiera.</string>
+</resources>
