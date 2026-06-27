@@ -1,5 +1,4 @@
 # Token Addict — ProGuard / R8 keep rules
-# These rules are prepared for when minification is enabled in Task 13.
 
 # ── Gson model classes (serialized/deserialized via reflection) ──────────────
 -keep class com.tokenaddict.app.data.model.** { *; }
@@ -25,6 +24,17 @@
 -keep interface com.tokenaddict.app.data.AiProvider { *; }
 -keep class com.tokenaddict.app.data.ClaudeProvider { *; }
 -keep class com.tokenaddict.app.data.KimiOAuthManager { *; }
+-keep class com.tokenaddict.app.data.KimiProvider { *; }
+-keep class com.tokenaddict.app.data.KimiTokenManager { *; }
+-keep class com.tokenaddict.app.data.SessionManager { *; }
+-keep class com.tokenaddict.app.data.NotificationScheduler { *; }
+-keep class com.tokenaddict.app.data.NotificationMessageProvider { *; }
+-keep class com.tokenaddict.app.data.WebViewCookieJar { *; }
+
+# ── Gson inner data classes used for deserialization ─────────────────────────
+# KimiOAuthManager inner classes use @SerializedName but live outside model.**
+-keep class com.tokenaddict.app.data.KimiOAuthManager$DeviceCodeResponse { *; }
+-keep class com.tokenaddict.app.data.KimiOAuthManager$TokenResponse { *; }
 
 # ── Gson reflection metadata ────────────────────────────────────────────────
 -keepattributes Signature
@@ -33,15 +43,22 @@
     @com.google.gson.annotations.SerializedName <fields>;
 }
 
+# Gson TypeToken subclasses (anonymous object : TypeToken<...>() {}) must keep
+# their generic Signature attribute or Gson throws IllegalStateException at runtime.
+# In R8 full mode, -keepattributes only applies to explicitly kept classes.
+-keep class * extends com.google.gson.reflect.TypeToken { *; }
+
 # ── Kotlin metadata for sealed classes and coroutines ────────────────────────
 -keep class kotlin.Metadata { *; }
 -keepattributes RuntimeVisibleAnnotations
 
-# ── EncryptedSharedPreferences (security-crypto) direct entry points ────────
-# Consumer rules are bundled, but we keep the classes we instantiate directly.
--keep class androidx.security.crypto.EncryptedSharedPreferences { *; }
--keep class androidx.security.crypto.MasterKey { *; }
--keep class androidx.security.crypto.MasterKey$Builder { *; }
+# ── security-crypto (EncryptedSharedPreferences + Tink internals) ────────────
+# security-crypto:1.1.0-alpha06 bundles NO consumer ProGuard rules.
+# Without these, R8 strips internal Tink crypto classes that EncryptedSharedPreferences
+# instantiates via reflection at runtime — causing a crash on every cold start.
+-keep class androidx.security.crypto.** { *; }
+-keep class com.google.crypto.tink.** { *; }
+-dontwarn com.google.crypto.tink.**
 
 # ── Secure storage abstraction (T1/T2) ─────────────────────────────────────
 -keep class com.tokenaddict.app.data.SecurePreferences { *; }

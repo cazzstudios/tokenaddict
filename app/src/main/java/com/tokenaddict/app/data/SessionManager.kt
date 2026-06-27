@@ -6,7 +6,6 @@ import android.util.Log
 import android.webkit.CookieManager
 import com.tokenaddict.app.data.model.SessionState
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 
 class SessionManager(private val context: Context, private val providerId: String) {
 
@@ -24,7 +23,6 @@ class SessionManager(private val context: Context, private val providerId: Strin
         )
 
         private val gson = Gson()
-        private val stringListType = object : TypeToken<List<String>>() {}.type
 
         /**
          * Test-only override for secure prefs creation. Null in production.
@@ -103,7 +101,7 @@ class SessionManager(private val context: Context, private val providerId: Strin
 
     private fun jsonToCookies(jsonString: String): List<String> {
         return try {
-            gson.fromJson(jsonString, stringListType) ?: emptyList()
+            gson.fromJson(jsonString, Array<String>::class.java)?.toList() ?: emptyList()
         } catch (e: Exception) {
             jsonString.split("; ").filter { it.isNotBlank() }
         }
