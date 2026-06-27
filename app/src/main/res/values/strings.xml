@@ -3,8 +3,8 @@
     <string name="app_name">Token Addict</string>
 
     <!-- Notification Channels -->
-    <string name="channel_reset_name">Reset Schedule</string>
-    <string name="channel_reset_description">Notifications about Token Addict usage limit reset</string>
+    <string name="channel_reset_name">Usage Reset</string>
+    <string name="channel_reset_description">Notifications when your usage limit resets</string>
     <string name="channel_limit_name">Limit Alerts</string>
     <string name="channel_limit_description">Notifications when approaching Token Addict usage limits</string>
 

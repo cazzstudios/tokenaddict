@@ -3,14 +3,40 @@
     <string name="app_name">Token Addict</string>
 
     <!-- Notification Channels -->
-    <string name="channel_reset_name">Pianificazione Reset</string>
-    <string name="channel_reset_description">Notifiche sul reset del limite di utilizzo di Token Addict</string>
+    <string name="channel_reset_name">Reset Utilizzo</string>
+    <string name="channel_reset_description">Notifiche quando il limite di utilizzo viene reimpostato</string>
     <string name="channel_limit_name">Avvisi Limite</string>
     <string name="channel_limit_description">Notifiche quando si avvicina ai limiti di utilizzo di Token Addict</string>
 
     <!-- Notifications -->
     <string name="notification_reset_title">Limite Utilizzo Reset</string>
     <string name="notification_reset_message">Il tuo limite di utilizzo di Claude \u00e8 stato reimpostato. Tocca per controllare.</string>
+    <string name="notification_reset_message_kimi">Il tuo limite di utilizzo di Kimi \u00e8 stato reimpostato. Tocca per controllare.</string>
+    <string name="session_expired_title">Sessione Scaduta</string>
+    <string name="session_expired_message">La tua sessione \u00e8 scaduta \u2014 tocca per riaccedere.</string>
+    <string name="reset_ready_title">Pronto all\u2019Uso</string>
+    <string name="reset_ready_message">Il tuo limite di utilizzo \u00e8 stato reimpostato. Tocca per controllare.</string>
+
+    <string-array name="notification_reset_messages">
+        <item>[agent] ha fatto una bella dormita! Pronto per tornare al lavoro.</item>
+        <item>La pausa di [agent] \u00e8 finita, e anche la tua. Torna al lavoro!</item>
+        <item>Limiti di [agent] reimpostati! Cosa aspetti?</item>
+        <item>Un token inutilizzato \u00e8 un token sprecato. [agent] ha token inutilizzati. Smetti di sprecare token.</item>
+        <item>[agent] \u00e8 tornato dalle vacanze.</item>
+        <item>Token freschi per [agent] \u2014 che inizino i prompt!</item>
+        <item>[agent] sente la tua mancanza! Smetti di fare finta di avere cose migliori da fare e vieni a fare due chiacchiere!</item>
+        <item>La tua dose di [agent] \u00e8 pronta e ti aspetta!</item>
+        <item>[agent] \u00e8 stato ricaricato.</item>
+        <item>I token scorrono di nuovo! I tuoi dubbi e bug sono pronti per essere schiacciati!</item>
+        <item>Il tuo collaboratore preferito si sente solo! Metti [agent] al lavoro.</item>
+        <item>[agent] \u00e8 carico di caffeina e pronto a programmare!</item>
+        <item>La grande siccit\u00e0 dei token \u00e8 finita! [agent] al tuo servizio!</item>
+        <item>Chi ha token non aspetti token! E [agent] ha i token!</item>
+        <item>Token appena sfornati per [agent]! Non perdere tempo!</item>
+        <item>Bisogna battere il ferro mentre \u00e8 caldo, e [agent] \u00e8 molto caldo!</item>
+        <item>Dai la colpa ai limiti di utilizzo per la mancanza di risultati? Nessuna scusa ora, [agent] \u00e8 di nuovo in azione!</item>
+        <item>Smetti di sprecare tempo con gli umani. [agent] \u00e8 pronto per i tuoi prompt.</item>
+    </string-array>
 
     <!-- Main Activity -->
     <string name="loading">Caricamento\u2026</string>
@@ -40,16 +66,10 @@
     <string name="about_summary">Token Addict v1.0</string>
 
     <!-- Content Descriptions -->
-    <string name="session_expired_title">Sessione Scaduta</string>
-    <string name="session_expired_message">La tua sessione \u00e8 scaduta \u2014 tocca per riaccedere.</string>
-    <string name="reset_ready_title">Pronto all\u2019Uso</string>
-    <string name="reset_ready_message">Il tuo limite di utilizzo \u00e8 stato reimpostato. Tocca per controllare.</string>
-
-    <!-- Content Descriptions -->
     <string name="cd_utilization_progress">Barra di progresso dell\u2019utilizzo</string>
     <string name="cd_loading">Indicatore di caricamento</string>
-    <string name="cd_working_robot">Working robot icon</string>
-    <string name="cd_resting_robot">Resting robot icon</string>
+    <string name="cd_working_robot">Icona robot al lavoro</string>
+    <string name="cd_resting_robot">Icona robot a riposo</string>
 
     <!-- Formats -->
     <string name="format_with_reset">%1$s, %2$s</string>
@@ -63,9 +83,6 @@
     <string name="provider_claude">Claude</string>
     <string name="provider_kimi">Kimi Code</string>
     <string name="please_log_in_kimi">Accedi a Kimi Code</string>
-
-    <!-- Kimi Notification -->
-    <string name="notification_reset_message_kimi">Il tuo limite di utilizzo di Kimi \u00e8 stato reimpostato. Tocca per controllare.</string>
 
     <!-- Kimi Login Activity -->
     <string name="kimi_login_title">Accedi a Kimi Code</string>
