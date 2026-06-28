@@ -187,10 +187,11 @@ class MainViewModel @JvmOverloads constructor(
         val days = remaining / (1000 * 60 * 60 * 24)
         val hours = (remaining / (1000 * 60 * 60)) % 24
         val minutes = (remaining / (1000 * 60)) % 60
+        val seconds = (remaining / 1000) % 60
         return if (days > 0) {
             String.format("%02d:%02d:%02d", days, hours, minutes)
         } else {
-            String.format("%02d:%02d", hours, minutes)
+            String.format("%02d:%02d:%02d", hours, minutes, seconds)
         }
     }
 
