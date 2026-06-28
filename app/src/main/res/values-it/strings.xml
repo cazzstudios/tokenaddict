@@ -47,6 +47,11 @@
     <string name="resets_at">Reset alle: %s</string>
     <string name="last_checked">Ultimo controllo: %s</string>
     <string name="resets_in">si resetta tra %s</string>
+    <string name="countdown_days">Giorni</string>
+    <string name="countdown_hours">Ore</string>
+    <string name="countdown_minutes">Minuti</string>
+    <string name="countdown_seconds">Secondi</string>
+    <string name="countdown_separator">:</string>
     <string name="claude_service_changed_title">Problema integrazione Claude</string>
     <string name="claude_service_changed_message">Claude.ai potrebbe essere cambiato. I dati di utilizzo potrebbero non essere disponibili fino all\u2019aggiornamento dell\u2019app.</string>
 
@@ -71,6 +76,10 @@
     <string name="cd_working_robot">Icona robot al lavoro</string>
     <string name="cd_resting_robot">Icona robot a riposo</string>
     <string name="cd_limit_countdown">Tempo mancante al reset del limite di utilizzo</string>
+    <string name="cd_countdown_days">Giorni rimanenti</string>
+    <string name="cd_countdown_hours">Ore rimanenti</string>
+    <string name="cd_countdown_minutes">Minuti rimanenti</string>
+    <string name="cd_countdown_seconds">Secondi rimanenti</string>
 
     <!-- Formats -->
     <string name="format_with_reset">%1$s, %2$s</string>

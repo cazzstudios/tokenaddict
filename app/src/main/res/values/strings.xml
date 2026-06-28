@@ -50,6 +50,11 @@
     <string name="resets_at">Resets at: %s</string>
     <string name="last_checked">Last checked: %s</string>
     <string name="resets_in">resets in %s</string>
+    <string name="countdown_days">Days</string>
+    <string name="countdown_hours">Hours</string>
+    <string name="countdown_minutes">Minutes</string>
+    <string name="countdown_seconds">Seconds</string>
+    <string name="countdown_separator">:</string>
 
     <!-- Main Activity -->
     <string name="claude_service_changed_title">Claude integration issue</string>
@@ -76,6 +81,10 @@
     <string name="cd_working_robot">Working robot icon</string>
     <string name="cd_resting_robot">Resting robot icon</string>
     <string name="cd_limit_countdown">Time until usage limit resets</string>
+    <string name="cd_countdown_days">Days remaining</string>
+    <string name="cd_countdown_hours">Hours remaining</string>
+    <string name="cd_countdown_minutes">Minutes remaining</string>
+    <string name="cd_countdown_seconds">Seconds remaining</string>
 
     <!-- Formats -->
     <string name="format_with_reset">%1$s, %2$s</string>
