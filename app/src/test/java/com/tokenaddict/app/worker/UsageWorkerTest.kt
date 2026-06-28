@@ -13,9 +13,11 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
+import java.time.OffsetDateTime
 
 class UsageWorkerTest {
 
@@ -179,6 +181,99 @@ class UsageWorkerTest {
         runBlocking { worker.executeWork() }
 
         verify(mockNotificationScheduler).scheduleResetNotification(anyLong())
+    }
+
+    @Test
+    fun `doWork schedules notification at weekly reset when both limits reached and weekly resets later`() {
+        `when`(mockSessionManager.isLoggedIn()).thenReturn(true)
+        val fiveHourResetsAt = TestUtils.createFutureResetTime(2)
+        val weeklyResetsAt = TestUtils.createFutureResetTime(48)
+        stubUsage(TestUtils.createMockUsageInfo(
+            utilization = 100.0,
+            resetsAt = fiveHourResetsAt,
+            weeklyUtilization = 100.0,
+            weeklyResetsAt = weeklyResetsAt
+        ))
+
+        runBlocking { worker.executeWork() }
+
+        val captor = ArgumentCaptor.forClass(Long::class.java)
+        verify(mockNotificationScheduler).scheduleResetNotification(captor.capture())
+        assertEquals(OffsetDateTime.parse(weeklyResetsAt).toInstant().toEpochMilli(), captor.value)
+    }
+
+    @Test
+    fun `doWork schedules notification at 5h reset when both limits reached and 5h resets later`() {
+        `when`(mockSessionManager.isLoggedIn()).thenReturn(true)
+        val fiveHourResetsAt = TestUtils.createFutureResetTime(48)
+        val weeklyResetsAt = TestUtils.createFutureResetTime(2)
+        stubUsage(TestUtils.createMockUsageInfo(
+            utilization = 100.0,
+            resetsAt = fiveHourResetsAt,
+            weeklyUtilization = 100.0,
+            weeklyResetsAt = weeklyResetsAt
+        ))
+
+        runBlocking { worker.executeWork() }
+
+        val captor = ArgumentCaptor.forClass(Long::class.java)
+        verify(mockNotificationScheduler).scheduleResetNotification(captor.capture())
+        assertEquals(OffsetDateTime.parse(fiveHourResetsAt).toInstant().toEpochMilli(), captor.value)
+    }
+
+    @Test
+    fun `doWork schedules notification at weekly reset when only weekly limit reached`() {
+        `when`(mockSessionManager.isLoggedIn()).thenReturn(true)
+        val weeklyResetsAt = TestUtils.createFutureResetTime(48)
+        stubUsage(TestUtils.createMockUsageInfo(
+            utilization = 50.0,
+            resetsAt = TestUtils.createFutureResetTime(2),
+            weeklyUtilization = 100.0,
+            weeklyResetsAt = weeklyResetsAt
+        ))
+
+        runBlocking { worker.executeWork() }
+
+        val captor = ArgumentCaptor.forClass(Long::class.java)
+        verify(mockNotificationScheduler).scheduleResetNotification(captor.capture())
+        assertEquals(OffsetDateTime.parse(weeklyResetsAt).toInstant().toEpochMilli(), captor.value)
+    }
+
+    @Test
+    fun `doWork cancels notification when both reset times have passed`() {
+        `when`(mockSessionManager.isLoggedIn()).thenReturn(true)
+        stubUsage(TestUtils.createMockUsageInfo(
+            utilization = 100.0,
+            resetsAt = TestUtils.createExpiredResetTime(),
+            weeklyUtilization = 100.0,
+            weeklyResetsAt = TestUtils.createExpiredResetTime(),
+            isReset = true,
+            weeklyIsReset = true
+        ))
+
+        runBlocking { worker.executeWork() }
+
+        verify(mockNotificationScheduler).cancelResetNotification()
+    }
+
+    @Test
+    fun `doWork schedules notification at weekly reset when 5h reset passed but weekly limit still blocking`() {
+        `when`(mockSessionManager.isLoggedIn()).thenReturn(true)
+        val weeklyResetsAt = TestUtils.createFutureResetTime(48)
+        stubUsage(TestUtils.createMockUsageInfo(
+            utilization = 100.0,
+            resetsAt = TestUtils.createExpiredResetTime(),
+            weeklyUtilization = 100.0,
+            weeklyResetsAt = weeklyResetsAt,
+            isReset = true,
+            weeklyIsReset = false
+        ))
+
+        runBlocking { worker.executeWork() }
+
+        val captor = ArgumentCaptor.forClass(Long::class.java)
+        verify(mockNotificationScheduler).scheduleResetNotification(captor.capture())
+        assertEquals(OffsetDateTime.parse(weeklyResetsAt).toInstant().toEpochMilli(), captor.value)
     }
 
     @Test

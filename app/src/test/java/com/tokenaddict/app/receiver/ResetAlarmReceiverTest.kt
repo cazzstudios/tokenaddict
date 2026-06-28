@@ -18,9 +18,11 @@ import org.mockito.ArgumentCaptor
 import org.mockito.MockedStatic
 import org.mockito.Mockito
 import org.mockito.Mockito.any
+import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.eq
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.mockStatic
+import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.robolectric.RobolectricTestRunner
@@ -117,5 +119,60 @@ class ResetAlarmReceiverTest {
 
         val kimiIntent = Intent("com.tokenaddict.app.RESET_ALARM_KIMI")
         receiver.onReceive(context, kimiIntent)
+    }
+
+    @Test
+    fun onReceive_doesNotPostNotification_whenWeeklyResetStillInFuture() {
+        val now = System.currentTimeMillis()
+        context.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putLong("resets_at", now - 1000)
+            .putLong("weekly_resets_at", now + 3600_000)
+            .apply()
+
+        val intent = Intent("com.tokenaddict.app.RESET_ALARM_CLAUDE")
+        receiver.onReceive(context, intent)
+
+        verify(mockNotificationManager, never()).notify(anyInt(), any(android.app.Notification::class.java))
+    }
+
+    @Test
+    fun onReceive_doesNotPostNotification_when5hResetStillInFuture() {
+        val now = System.currentTimeMillis()
+        context.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putLong("resets_at", now + 3600_000)
+            .putLong("weekly_resets_at", now - 1000)
+            .apply()
+
+        val intent = Intent("com.tokenaddict.app.RESET_ALARM_CLAUDE")
+        receiver.onReceive(context, intent)
+
+        verify(mockNotificationManager, never()).notify(anyInt(), any(android.app.Notification::class.java))
+    }
+
+    @Test
+    fun shouldNotify_returnsTrue_whenBothResetTimesHavePassed() {
+        assertTrue(ResetAlarmReceiver.shouldNotify(100L, 200L, 300L))
+    }
+
+    @Test
+    fun shouldNotify_returnsTrue_whenResetTimesAreUnset() {
+        assertTrue(ResetAlarmReceiver.shouldNotify(0L, 0L, 300L))
+    }
+
+    @Test
+    fun shouldNotify_returnsFalse_whenWeeklyResetStillInFuture() {
+        assertFalse(ResetAlarmReceiver.shouldNotify(100L, 400L, 300L))
+    }
+
+    @Test
+    fun shouldNotify_returnsFalse_when5hResetStillInFuture() {
+        assertFalse(ResetAlarmReceiver.shouldNotify(400L, 100L, 300L))
+    }
+
+    @Test
+    fun shouldNotify_returnsFalse_whenBothResetsStillInFuture() {
+        assertFalse(ResetAlarmReceiver.shouldNotify(400L, 500L, 300L))
     }
 }

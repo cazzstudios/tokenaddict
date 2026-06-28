@@ -25,6 +25,15 @@ class ResetAlarmReceiver : BroadcastReceiver() {
         private const val NOTIFICATION_ID_KIMI = 1002
         private const val ACTION_SUFFIX_CLAUDE = "RESET_ALARM_CLAUDE"
         private const val ACTION_SUFFIX_KIMI = "RESET_ALARM_KIMI"
+
+        @JvmStatic
+        fun shouldNotify(resetsAt: Long, weeklyResetsAt: Long, now: Long): Boolean {
+            return isResetTimePassed(resetsAt, now) && isResetTimePassed(weeklyResetsAt, now)
+        }
+
+        private fun isResetTimePassed(resetTime: Long, now: Long): Boolean {
+            return resetTime <= 0L || resetTime <= now
+        }
     }
 
     override fun onReceive(context: Context, intent: Intent) {
@@ -45,7 +54,13 @@ class ResetAlarmReceiver : BroadcastReceiver() {
 
         val notificationId = if (providerId == "kimi") NOTIFICATION_ID_KIMI else NOTIFICATION_ID_CLAUDE
 
-        if (notificationsEnabled) {
+        val prefsName = if (providerId == "kimi") "usage_prefs_kimi" else "usage_prefs"
+        val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+        val now = System.currentTimeMillis()
+        val resetsAt = prefs.getLong("resets_at", 0L)
+        val weeklyResetsAt = prefs.getLong("weekly_resets_at", 0L)
+
+        if (notificationsEnabled && shouldNotify(resetsAt, weeklyResetsAt, now)) {
             val title = context.getString(R.string.notification_reset_title)
             val message = NotificationMessageProvider(context).getResetMessage(providerId)
 
@@ -85,11 +100,6 @@ class ResetAlarmReceiver : BroadcastReceiver() {
         }
         WorkManager.getInstance(context).enqueue(workRequest)
 
-        val prefsName = if (providerId == "kimi") "usage_prefs_kimi" else "usage_prefs"
-        val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
-        val now = System.currentTimeMillis()
-        val resetsAt = prefs.getLong("resets_at", 0L)
-        val weeklyResetsAt = prefs.getLong("weekly_resets_at", 0L)
         prefs.edit().apply {
             if (resetsAt in 1..now) {
                 putBoolean("is_reset", true)

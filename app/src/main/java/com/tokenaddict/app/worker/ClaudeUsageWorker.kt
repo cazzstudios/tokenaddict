@@ -82,33 +82,51 @@ class ClaudeUsageWorker(
             val utilization = usageInfo.utilization
             val resetTimeStr = usageInfo.resetsAt
             val isReset = usageInfo.isReset
-            var resetTimeMillis = 0L
 
             val weeklyUtilization = usageInfo.weeklyUtilization
             val weeklyResetsAtStr = usageInfo.weeklyResetsAt
             val weeklyIsReset = usageInfo.weeklyIsReset
-            var weeklyResetTimeMillis = 0L
-            if (weeklyResetsAtStr != null) {
+
+            val now = Instant.now()
+
+            var resetTimeMillis = 0L
+            val fiveHourResetInstant = resetTimeStr?.let {
                 try {
-                    val weeklyResetTime = OffsetDateTime.parse(weeklyResetsAtStr).toInstant()
-                    weeklyResetTimeMillis = weeklyResetTime.toEpochMilli()
-                } catch (e: Exception) { Log.w(TAG, "Failed to parse weekly reset time: $weeklyResetsAtStr", e) }
+                    OffsetDateTime.parse(it).toInstant().also { instant ->
+                        resetTimeMillis = instant.toEpochMilli()
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to parse reset time: $it", e)
+                    null
+                }
             }
 
-            val hasReachedLimit = utilization >= 100.0 || weeklyUtilization >= 100.0
-
-            if (resetTimeStr != null) {
-                val resetTime = OffsetDateTime.parse(resetTimeStr).toInstant()
-                val now = Instant.now()
-                resetTimeMillis = resetTime.toEpochMilli()
-
-                if (resetTime.isAfter(now)) {
-                    if (hasReachedLimit) {
-                        getNotificationScheduler().scheduleResetNotification(resetTime.toEpochMilli())
+            var weeklyResetTimeMillis = 0L
+            val weeklyResetInstant = weeklyResetsAtStr?.let {
+                try {
+                    OffsetDateTime.parse(it).toInstant().also { instant ->
+                        weeklyResetTimeMillis = instant.toEpochMilli()
                     }
-                } else {
-                    getNotificationScheduler().cancelResetNotification()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to parse weekly reset time: $weeklyResetsAtStr", e)
+                    null
                 }
+            }
+
+            val isFiveHourLimitReached = utilization >= 100.0
+            val isWeeklyLimitReached = weeklyUtilization >= 100.0
+
+            val fiveHourBlocking = isFiveHourLimitReached && fiveHourResetInstant?.isAfter(now) == true
+            val weeklyBlocking = isWeeklyLimitReached && weeklyResetInstant?.isAfter(now) == true
+
+            if (fiveHourBlocking || weeklyBlocking) {
+                val effectiveResetMillis = maxOf(
+                    if (fiveHourBlocking) fiveHourResetInstant!!.toEpochMilli() else Long.MIN_VALUE,
+                    if (weeklyBlocking) weeklyResetInstant!!.toEpochMilli() else Long.MIN_VALUE
+                )
+                getNotificationScheduler().scheduleResetNotification(effectiveResetMillis)
+            } else {
+                getNotificationScheduler().cancelResetNotification()
             }
 
             try {
