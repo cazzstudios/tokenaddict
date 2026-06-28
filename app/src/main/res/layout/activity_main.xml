@@ -180,15 +180,236 @@
                                     android:textAppearance="?attr/textAppearanceBodyMedium" />
                             </LinearLayout>
 
+                            <!-- Hidden placeholder — task 6 will remove this reference -->
                             <TextView
                                 android:id="@+id/claudeLimitCountdown"
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:visibility="gone" />
+
+                            <!-- Short format: HH : MM : SS -->
+                            <LinearLayout
+                                android:id="@+id/claudeCountdownShortContainer"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:gravity="center"
                                 android:layout_gravity="center_vertical"
-                                android:textAppearance="?attr/textAppearanceHeadlineMedium"
-                                android:visibility="gone"
-                                android:contentDescription="@string/cd_limit_countdown" />
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <!-- Hours -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/claudeShortHours"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_hours" />
+
+                                    <TextView
+                                        android:id="@+id/claudeShortHoursLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_hours"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+
+                                <!-- Colon -->
+                                <TextView
+                                    android:layout_width="24dp"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/countdown_separator"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <!-- Minutes -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/claudeShortMinutes"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_minutes" />
+
+                                    <TextView
+                                        android:id="@+id/claudeShortMinutesLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_minutes"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+
+                                <!-- Colon -->
+                                <TextView
+                                    android:layout_width="24dp"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/countdown_separator"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <!-- Seconds -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/claudeShortSeconds"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_seconds" />
+
+                                    <TextView
+                                        android:id="@+id/claudeShortSecondsLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_seconds"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- Long format: DD : HH : MM -->
+                            <LinearLayout
+                                android:id="@+id/claudeCountdownLongContainer"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <!-- Days -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/claudeLongDays"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_days" />
+
+                                    <TextView
+                                        android:id="@+id/claudeLongDaysLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_days"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+
+                                <!-- Colon -->
+                                <TextView
+                                    android:layout_width="24dp"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/countdown_separator"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <!-- Hours -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/claudeLongHours"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_hours" />
+
+                                    <TextView
+                                        android:id="@+id/claudeLongHoursLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_hours"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+
+                                <!-- Colon -->
+                                <TextView
+                                    android:layout_width="24dp"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/countdown_separator"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <!-- Minutes -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/claudeLongMinutes"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_minutes" />
+
+                                    <TextView
+                                        android:id="@+id/claudeLongMinutesLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_minutes"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </LinearLayout>
                         </LinearLayout>
 
                         <TextView
@@ -373,15 +594,236 @@
                                     android:textAppearance="?attr/textAppearanceBodyMedium" />
                             </LinearLayout>
 
+                            <!-- Hidden placeholder — task 6 will remove this reference -->
                             <TextView
                                 android:id="@+id/kimiLimitCountdown"
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:visibility="gone" />
+
+                            <!-- Short format: HH : MM : SS -->
+                            <LinearLayout
+                                android:id="@+id/kimiCountdownShortContainer"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:gravity="center"
                                 android:layout_gravity="center_vertical"
-                                android:textAppearance="?attr/textAppearanceHeadlineMedium"
-                                android:visibility="gone"
-                                android:contentDescription="@string/cd_limit_countdown" />
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <!-- Hours -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/kimiShortHours"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_hours" />
+
+                                    <TextView
+                                        android:id="@+id/kimiShortHoursLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_hours"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+
+                                <!-- Colon -->
+                                <TextView
+                                    android:layout_width="24dp"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/countdown_separator"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <!-- Minutes -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/kimiShortMinutes"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_minutes" />
+
+                                    <TextView
+                                        android:id="@+id/kimiShortMinutesLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_minutes"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+
+                                <!-- Colon -->
+                                <TextView
+                                    android:layout_width="24dp"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/countdown_separator"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <!-- Seconds -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/kimiShortSeconds"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_seconds" />
+
+                                    <TextView
+                                        android:id="@+id/kimiShortSecondsLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_seconds"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- Long format: DD : HH : MM -->
+                            <LinearLayout
+                                android:id="@+id/kimiCountdownLongContainer"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <!-- Days -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/kimiLongDays"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_days" />
+
+                                    <TextView
+                                        android:id="@+id/kimiLongDaysLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_days"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+
+                                <!-- Colon -->
+                                <TextView
+                                    android:layout_width="24dp"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/countdown_separator"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <!-- Hours -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/kimiLongHours"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_hours" />
+
+                                    <TextView
+                                        android:id="@+id/kimiLongHoursLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_hours"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+
+                                <!-- Colon -->
+                                <TextView
+                                    android:layout_width="24dp"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:text="@string/countdown_separator"
+                                    android:textSize="24sp"
+                                    android:textStyle="bold"
+                                    android:textColor="?attr/colorOnSurface" />
+
+                                <!-- Minutes -->
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:orientation="vertical">
+
+                                    <com.tokenaddict.app.ui.CountdownDigitView
+                                        android:id="@+id/kimiLongMinutes"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:minWidth="48dp"
+                                        android:background="@drawable/countdown_segment_background"
+                                        android:paddingHorizontal="12dp"
+                                        android:paddingVertical="10dp"
+                                        android:contentDescription="@string/cd_countdown_minutes" />
+
+                                    <TextView
+                                        android:id="@+id/kimiLongMinutesLabel"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="@string/countdown_minutes"
+                                        android:textSize="10sp"
+                                        android:textColor="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
+                            </LinearLayout>
                         </LinearLayout>
 
                         <TextView

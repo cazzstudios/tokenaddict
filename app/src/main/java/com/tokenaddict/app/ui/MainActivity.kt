@@ -55,10 +55,36 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var claudeRobotIcon: ImageView
     private lateinit var claudeUsageDetails: LinearLayout
-    private lateinit var claudeLimitCountdown: TextView
     private lateinit var kimiRobotIcon: ImageView
     private lateinit var kimiUsageDetails: LinearLayout
-    private lateinit var kimiLimitCountdown: TextView
+
+    // Claude countdown containers
+    private lateinit var claudeCountdownShortContainer: LinearLayout
+    private lateinit var claudeCountdownLongContainer: LinearLayout
+
+    // Claude short digits (HH:MM:SS)
+    private lateinit var claudeShortHours: CountdownDigitView
+    private lateinit var claudeShortMinutes: CountdownDigitView
+    private lateinit var claudeShortSeconds: CountdownDigitView
+
+    // Claude long digits (DD:HH:MM)
+    private lateinit var claudeLongDays: CountdownDigitView
+    private lateinit var claudeLongHours: CountdownDigitView
+    private lateinit var claudeLongMinutes: CountdownDigitView
+
+    // Kimi countdown containers
+    private lateinit var kimiCountdownShortContainer: LinearLayout
+    private lateinit var kimiCountdownLongContainer: LinearLayout
+
+    // Kimi short digits (HH:MM:SS)
+    private lateinit var kimiShortHours: CountdownDigitView
+    private lateinit var kimiShortMinutes: CountdownDigitView
+    private lateinit var kimiShortSeconds: CountdownDigitView
+
+    // Kimi long digits (DD:HH:MM)
+    private lateinit var kimiLongDays: CountdownDigitView
+    private lateinit var kimiLongHours: CountdownDigitView
+    private lateinit var kimiLongMinutes: CountdownDigitView
 
     private val claudeLoginLauncher = registerForActivityResult(LoginResultContract()) { success ->
         if (success) {
@@ -129,10 +155,27 @@ class MainActivity : AppCompatActivity() {
 
         claudeRobotIcon = findViewById(R.id.claudeRobotIcon)
         claudeUsageDetails = findViewById(R.id.claudeUsageDetails)
-        claudeLimitCountdown = findViewById(R.id.claudeLimitCountdown)
+
+        claudeCountdownShortContainer = findViewById(R.id.claudeCountdownShortContainer)
+        claudeCountdownLongContainer = findViewById(R.id.claudeCountdownLongContainer)
+        claudeShortHours = findViewById(R.id.claudeShortHours)
+        claudeShortMinutes = findViewById(R.id.claudeShortMinutes)
+        claudeShortSeconds = findViewById(R.id.claudeShortSeconds)
+        claudeLongDays = findViewById(R.id.claudeLongDays)
+        claudeLongHours = findViewById(R.id.claudeLongHours)
+        claudeLongMinutes = findViewById(R.id.claudeLongMinutes)
+
         kimiRobotIcon = findViewById(R.id.kimiRobotIcon)
         kimiUsageDetails = findViewById(R.id.kimiUsageDetails)
-        kimiLimitCountdown = findViewById(R.id.kimiLimitCountdown)
+
+        kimiCountdownShortContainer = findViewById(R.id.kimiCountdownShortContainer)
+        kimiCountdownLongContainer = findViewById(R.id.kimiCountdownLongContainer)
+        kimiShortHours = findViewById(R.id.kimiShortHours)
+        kimiShortMinutes = findViewById(R.id.kimiShortMinutes)
+        kimiShortSeconds = findViewById(R.id.kimiShortSeconds)
+        kimiLongDays = findViewById(R.id.kimiLongDays)
+        kimiLongHours = findViewById(R.id.kimiLongHours)
+        kimiLongMinutes = findViewById(R.id.kimiLongMinutes)
     }
 
     private fun setupListeners() {
@@ -213,7 +256,20 @@ class MainActivity : AppCompatActivity() {
             "$weeklyPercent%"
         }
 
-        updateRobotAndCountdown(claudeRobotIcon, claudeUsageDetails, claudeLimitCountdown, data.hasReachedLimit, data.limitCountdownText)
+        updateCountdownDisplay(
+            robotIcon = claudeRobotIcon,
+            usageDetails = claudeUsageDetails,
+            countdownShortContainer = claudeCountdownShortContainer,
+            countdownLongContainer = claudeCountdownLongContainer,
+            shortHours = claudeShortHours,
+            shortMinutes = claudeShortMinutes,
+            shortSeconds = claudeShortSeconds,
+            longDays = claudeLongDays,
+            longHours = claudeLongHours,
+            longMinutes = claudeLongMinutes,
+            hasReachedLimit = data.hasReachedLimit,
+            countdownText = data.limitCountdownText
+        )
 
         claudeLastCheckedText.text = getString(R.string.last_checked, data.lastChecked)
     }
@@ -253,28 +309,127 @@ class MainActivity : AppCompatActivity() {
             "$weeklyPercent%"
         }
 
-        updateRobotAndCountdown(kimiRobotIcon, kimiUsageDetails, kimiLimitCountdown, data.hasReachedLimit, data.limitCountdownText)
+        updateCountdownDisplay(
+            robotIcon = kimiRobotIcon,
+            usageDetails = kimiUsageDetails,
+            countdownShortContainer = kimiCountdownShortContainer,
+            countdownLongContainer = kimiCountdownLongContainer,
+            shortHours = kimiShortHours,
+            shortMinutes = kimiShortMinutes,
+            shortSeconds = kimiShortSeconds,
+            longDays = kimiLongDays,
+            longHours = kimiLongHours,
+            longMinutes = kimiLongMinutes,
+            hasReachedLimit = data.hasReachedLimit,
+            countdownText = data.limitCountdownText
+        )
 
         kimiLastCheckedText.text = getString(R.string.last_checked, data.lastChecked)
     }
 
-    private fun updateRobotAndCountdown(
+    private fun updateCountdownDisplay(
         robotIcon: ImageView,
         usageDetails: LinearLayout,
-        limitCountdown: TextView,
+        countdownShortContainer: LinearLayout,
+        countdownLongContainer: LinearLayout,
+        shortHours: CountdownDigitView,
+        shortMinutes: CountdownDigitView,
+        shortSeconds: CountdownDigitView,
+        longDays: CountdownDigitView,
+        longHours: CountdownDigitView,
+        longMinutes: CountdownDigitView,
         hasReachedLimit: Boolean,
         countdownText: String
     ) {
         if (hasReachedLimit) {
             robotIcon.setImageResource(R.drawable.resting)
-            usageDetails.visibility = View.GONE
-            limitCountdown.visibility = View.VISIBLE
-            limitCountdown.text = countdownText
+
+            val parts = countdownText.split(":")
+            val useLongFormat = parts.size == 3 && (parts[0].toIntOrNull() ?: 0) > 0
+
+            if (useLongFormat) {
+                longDays.setDigitValue(parts[0].toIntOrNull() ?: 0)
+                longHours.setDigitValue(parts[1].toIntOrNull() ?: 0)
+                longMinutes.setDigitValue(parts[2].toIntOrNull() ?: 0)
+                crossfade(usageDetails, countdownLongContainer)
+                countdownShortContainer.visibility = View.GONE
+            } else {
+                val hours = if (parts.size >= 1) parts[0].toIntOrNull() ?: 0 else 0
+                val minutes = if (parts.size >= 2) parts[1].toIntOrNull() ?: 0 else 0
+                val seconds = if (parts.size >= 3) parts[2].toIntOrNull() ?: 0 else 0
+                shortHours.setDigitValue(hours)
+                shortMinutes.setDigitValue(minutes)
+                shortSeconds.setDigitValue(seconds)
+                crossfade(usageDetails, countdownShortContainer)
+                countdownLongContainer.visibility = View.GONE
+            }
         } else {
             robotIcon.setImageResource(R.drawable.working)
+            countdownShortContainer.visibility = View.GONE
+            countdownLongContainer.visibility = View.GONE
             usageDetails.visibility = View.VISIBLE
-            limitCountdown.visibility = View.GONE
+            usageDetails.alpha = 1f
         }
+    }
+
+    private fun crossfade(from: View, to: View, duration: Long = 300L) {
+        if (from.visibility == View.GONE && to.visibility == View.VISIBLE && to.alpha == 1f) {
+            return
+        }
+
+        from.animate().cancel()
+        to.animate().cancel()
+
+        if (from.visibility == View.GONE) {
+            to.alpha = 0f
+            to.visibility = View.VISIBLE
+            to.animate()
+                .alpha(1f)
+                .setDuration(duration)
+                .start()
+            return
+        }
+
+        from.animate()
+            .alpha(0f)
+            .setDuration(duration)
+            .withEndAction {
+                from.visibility = View.GONE
+                from.alpha = 1f
+                to.alpha = 0f
+                to.visibility = View.VISIBLE
+                to.animate()
+                    .alpha(1f)
+                    .setDuration(duration)
+                    .start()
+            }
+            .start()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancelAllAnimations()
+    }
+
+    private fun cancelAllAnimations() {
+        claudeShortHours.animate().cancel()
+        claudeShortMinutes.animate().cancel()
+        claudeShortSeconds.animate().cancel()
+        claudeLongDays.animate().cancel()
+        claudeLongHours.animate().cancel()
+        claudeLongMinutes.animate().cancel()
+        kimiShortHours.animate().cancel()
+        kimiShortMinutes.animate().cancel()
+        kimiShortSeconds.animate().cancel()
+        kimiLongDays.animate().cancel()
+        kimiLongHours.animate().cancel()
+        kimiLongMinutes.animate().cancel()
+        claudeUsageDetails.animate().cancel()
+        kimiUsageDetails.animate().cancel()
+        claudeCountdownShortContainer.animate().cancel()
+        claudeCountdownLongContainer.animate().cancel()
+        kimiCountdownShortContainer.animate().cancel()
+        kimiCountdownLongContainer.animate().cancel()
     }
 
     private fun buildResetLabel(percentage: String, timeRemaining: String): SpannableString {
