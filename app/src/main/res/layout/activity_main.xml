@@ -190,8 +190,10 @@
                             <!-- Short format: HH : MM : SS -->
                             <LinearLayout
                                 android:id="@+id/claudeCountdownShortContainer"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
                                 android:layout_gravity="center_vertical"
                                 android:gravity="center_vertical"
                                 android:orientation="horizontal"
@@ -302,8 +304,10 @@
                             <!-- Long format: DD : HH : MM -->
                             <LinearLayout
                                 android:id="@+id/claudeCountdownLongContainer"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
                                 android:layout_gravity="center_vertical"
                                 android:gravity="center_vertical"
                                 android:orientation="horizontal"
@@ -604,8 +608,10 @@
                             <!-- Short format: HH : MM : SS -->
                             <LinearLayout
                                 android:id="@+id/kimiCountdownShortContainer"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
                                 android:layout_gravity="center_vertical"
                                 android:gravity="center_vertical"
                                 android:orientation="horizontal"
@@ -716,8 +722,10 @@
                             <!-- Long format: DD : HH : MM -->
                             <LinearLayout
                                 android:id="@+id/kimiCountdownLongContainer"
-                                android:layout_width="wrap_content"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
                                 android:layout_gravity="center_vertical"
                                 android:gravity="center_vertical"
                                 android:orientation="horizontal"
