@@ -2,10 +2,13 @@ package com.tokenaddict.app.ui
 
 import android.Manifest
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
@@ -24,6 +27,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.tokenaddict.app.R
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
 
@@ -123,14 +127,62 @@ class MainActivity : AppCompatActivity() {
                 ) == PackageManager.PERMISSION_GRANTED -> { }
 
                 shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) -> {
-                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    showNotificationPermissionRationaleDialog()
+                }
+
+                hasRequestedNotificationPermissionBefore() -> {
+                    showNotificationPermissionSettingsDialog()
                 }
 
                 else -> {
+                    markNotificationPermissionRequested()
                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }
             }
         }
+    }
+
+    private fun showNotificationPermissionRationaleDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.notification_permission_title)
+            .setMessage(R.string.notification_permission_rationale)
+            .setPositiveButton(R.string.notification_permission_open_settings) { _, _ ->
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            .setNegativeButton(R.string.notification_permission_cancel, null)
+            .show()
+    }
+
+    private fun showNotificationPermissionSettingsDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.notification_permission_title)
+            .setMessage(R.string.notification_permission_message)
+            .setPositiveButton(R.string.notification_permission_open_settings) { _, _ ->
+                openAppNotificationSettings()
+            }
+            .setNegativeButton(R.string.notification_permission_cancel, null)
+            .show()
+    }
+
+    private fun openAppNotificationSettings() {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:$packageName")
+        }
+        startActivity(intent)
+    }
+
+    private fun getNotificationPermissionPrefs(): SharedPreferences {
+        return getSharedPreferences(NOTIFICATION_PERMISSION_PREFS, MODE_PRIVATE)
+    }
+
+    private fun hasRequestedNotificationPermissionBefore(): Boolean {
+        return getNotificationPermissionPrefs().getBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, false)
+    }
+
+    private fun markNotificationPermissionRequested() {
+        getNotificationPermissionPrefs().edit()
+            .putBoolean(KEY_NOTIFICATION_PERMISSION_REQUESTED, true)
+            .apply()
     }
 
     private fun initViews() {
@@ -490,5 +542,10 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    companion object {
+        private const val NOTIFICATION_PERMISSION_PREFS = "notification_permission_prefs"
+        private const val KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"
     }
 }

@@ -1,6 +1,8 @@
 package com.tokenaddict.app.ui
 
+import android.Manifest
 import android.content.Context
+import android.provider.Settings
 import android.view.View
 import android.widget.ImageView
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -18,6 +20,9 @@ import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -29,7 +34,9 @@ import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowDialog
 import org.robolectric.shadows.ShadowLooper
+import org.robolectric.Shadows
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
@@ -47,6 +54,7 @@ class MainActivityTest {
         app.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE).edit().clear().commit()
         app.getSharedPreferences("usage_prefs_kimi", Context.MODE_PRIVATE).edit().clear().commit()
         app.getSharedPreferences("session_prefs", Context.MODE_PRIVATE).edit().clear().commit()
+        app.getSharedPreferences("notification_permission_prefs", Context.MODE_PRIVATE).edit().clear().commit()
 
         val masterKey = Mockito.mock(MasterKey::class.java)
         masterKeyBuilderMock = Mockito.mockConstruction(MasterKey.Builder::class.java) { mock, _ ->
@@ -223,5 +231,79 @@ class MainActivityTest {
         assertEquals(View.GONE, shortContainerAfter.visibility)
         val longContainerAfter = recreated.findViewById<View>(R.id.claudeCountdownLongContainer)
         assertEquals(View.GONE, longContainerAfter.visibility)
+    }
+
+    @Test
+    fun notificationPermissionGranted_noDialogShown() {
+        val app = RuntimeEnvironment.getApplication()
+        Shadows.shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+
+        launchActivity()
+        ShadowLooper.idleMainLooper()
+
+        assertNull(ShadowDialog.getLatestDialog())
+    }
+
+    @Test
+    fun notificationPermissionRationaleShown_showsRationaleDialog() {
+        val app = RuntimeEnvironment.getApplication()
+        Shadows.shadowOf(app).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        Shadows.shadowOf(app.packageManager)
+            .setShouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS, true)
+
+        val activity = launchActivity()
+        ShadowLooper.idleMainLooper()
+
+        val dialog = ShadowDialog.getLatestDialog() as? androidx.appcompat.app.AlertDialog
+        assertNotNull(dialog)
+        assertTrue(dialog!!.isShowing)
+        assertEquals(activity.getString(R.string.notification_permission_rationale), dialog.findViewById<android.widget.TextView>(android.R.id.message)?.text)
+    }
+
+    @Test
+    fun notificationPermissionPermanentlyDenied_showsSettingsDialog() {
+        val app = RuntimeEnvironment.getApplication()
+        app.getSharedPreferences("notification_permission_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("notification_permission_requested", true)
+            .commit()
+
+        Shadows.shadowOf(app).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        Shadows.shadowOf(app.packageManager)
+            .setShouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS, false)
+
+        val activity = launchActivity()
+        ShadowLooper.idleMainLooper()
+
+        val dialog = ShadowDialog.getLatestDialog() as? androidx.appcompat.app.AlertDialog
+        assertNotNull(dialog)
+        assertTrue(dialog!!.isShowing)
+        assertEquals(activity.getString(R.string.notification_permission_message), dialog.findViewById<android.widget.TextView>(android.R.id.message)?.text)
+    }
+
+    @Test
+    fun notificationPermissionSettingsDialog_openSettingsStartsSettingsIntent() {
+        val app = RuntimeEnvironment.getApplication()
+        app.getSharedPreferences("notification_permission_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putBoolean("notification_permission_requested", true)
+            .commit()
+
+        Shadows.shadowOf(app).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        Shadows.shadowOf(app.packageManager)
+            .setShouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS, false)
+
+        val activity = launchActivity()
+        ShadowLooper.idleMainLooper()
+
+        val dialog = ShadowDialog.getLatestDialog() as? androidx.appcompat.app.AlertDialog
+        assertNotNull(dialog)
+
+        dialog!!.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).performClick()
+        ShadowLooper.idleMainLooper()
+
+        val startedIntent = Shadows.shadowOf(activity).nextStartedActivity
+        assertNotNull(startedIntent)
+        assertEquals(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, startedIntent!!.action)
     }
 }

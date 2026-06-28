@@ -60,6 +60,13 @@
     <string name="claude_service_changed_title">Claude integration issue</string>
     <string name="claude_service_changed_message">Claude.ai may have changed. Usage data may be unavailable until the app is updated.</string>
 
+    <!-- Notification Permission Dialog -->
+    <string name="notification_permission_title">Enable Notifications</string>
+    <string name="notification_permission_message">Token Addict needs notification permission to alert you when your usage limits reset. Please enable it in app settings.</string>
+    <string name="notification_permission_rationale">Notifications help us alert you when your Claude or Kimi usage limits reset.</string>
+    <string name="notification_permission_open_settings">Open Settings</string>
+    <string name="notification_permission_cancel">Not Now</string>
+
     <!-- Settings -->
     <string name="settings">Settings</string>
     <string name="polling_interval_title">Polling Interval</string>
