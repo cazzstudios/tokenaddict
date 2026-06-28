@@ -250,7 +250,7 @@ class MainViewModel @JvmOverloads constructor(
             kimiWeeklyResetsAtMillis = weeklyResetsAtMillis
         }
 
-        val hasReachedLimit = utilization >= 1.0 || weeklyUtilization >= 1.0
+        val hasReachedLimit = utilization >= 100.0 || weeklyUtilization >= 100.0
 
         val limitCountdownText = if (hasReachedLimit) {
             val effectiveMillis = maxOf(resetsAtMillis, weeklyResetsAtMillis)

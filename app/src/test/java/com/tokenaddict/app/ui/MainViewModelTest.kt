@@ -94,7 +94,7 @@ class MainViewModelTest {
     fun futureReset_timeRemainingShowsHoursAndMinutes() {
         val futureMillis = System.currentTimeMillis() + 3 * 3_600_000L
         prefs.edit()
-            .putFloat("utilization", 0.5f)
+            .putFloat("utilization", 50.0f)
             .putLong("resets_at", futureMillis)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.0f)
@@ -114,7 +114,7 @@ class MainViewModelTest {
     fun expiredReset_timeRemainingIsEmpty() {
         val pastMillis = System.currentTimeMillis() - 3_600_000L
         prefs.edit()
-            .putFloat("utilization", 1.0f)
+            .putFloat("utilization", 100.0f)
             .putLong("resets_at", pastMillis)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.0f)
@@ -165,7 +165,7 @@ class MainViewModelTest {
     fun weeklyResetInFuture_timeRemainingShowsDaysHoursMinutes() {
         val futureMillis = System.currentTimeMillis() + 50 * 3_600_000L
         prefs.edit()
-            .putFloat("utilization", 0.5f)
+            .putFloat("utilization", 50.0f)
             .putLong("resets_at", futureMillis)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.8f)
@@ -239,7 +239,7 @@ class MainViewModelTest {
     fun loadUsageData_setsServiceChangedTrue_whenPrefFlagIsTrue() {
         val futureMillis = System.currentTimeMillis() + 3_600_000L
         prefs.edit()
-            .putFloat("utilization", 0.5f)
+            .putFloat("utilization", 50.0f)
             .putLong("resets_at", futureMillis)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.0f)
@@ -280,7 +280,7 @@ class MainViewModelTest {
     fun formatLimitCountdown_withDays_returnsDdHhMmFormat() {
         val threeDaysFromNow = System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000
         prefs.edit()
-            .putFloat("utilization", 1.0f)
+            .putFloat("utilization", 100.0f)
             .putLong("resets_at", threeDaysFromNow)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.0f)
@@ -300,7 +300,7 @@ class MainViewModelTest {
     fun formatLimitCountdown_withoutDays_returnsHhMmFormat() {
         val fiveHoursFromNow = System.currentTimeMillis() + 5L * 60 * 60 * 1000
         prefs.edit()
-            .putFloat("utilization", 1.0f)
+            .putFloat("utilization", 100.0f)
             .putLong("resets_at", fiveHoursFromNow)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.0f)
@@ -320,7 +320,7 @@ class MainViewModelTest {
     fun formatLimitCountdown_notAtLimit_returnsEmpty() {
         val threeHoursFromNow = System.currentTimeMillis() + 3L * 60 * 60 * 1000
         prefs.edit()
-            .putFloat("utilization", 0.5f)
+            .putFloat("utilization", 50.0f)
             .putLong("resets_at", threeHoursFromNow)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.0f)
@@ -340,10 +340,10 @@ class MainViewModelTest {
         val twoHoursFromNow = System.currentTimeMillis() + 2L * 60 * 60 * 1000
         val fiveDaysFromNow = System.currentTimeMillis() + 5L * 24 * 60 * 60 * 1000
         prefs.edit()
-            .putFloat("utilization", 1.0f)
+            .putFloat("utilization", 100.0f)
             .putLong("resets_at", twoHoursFromNow)
             .putBoolean("is_reset", false)
-            .putFloat("weekly_utilization", 1.0f)
+            .putFloat("weekly_utilization", 100.0f)
             .putLong("weekly_resets_at", fiveDaysFromNow)
             .putBoolean("weekly_is_reset", false)
             .putLong("last_checked", System.currentTimeMillis())
@@ -360,7 +360,7 @@ class MainViewModelTest {
     fun formatLimitCountdown_expiredReset_returnsEmpty() {
         val oneHourAgo = System.currentTimeMillis() - 1L * 60 * 60 * 1000
         prefs.edit()
-            .putFloat("utilization", 1.0f)
+            .putFloat("utilization", 100.0f)
             .putLong("resets_at", oneHourAgo)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.0f)
@@ -378,7 +378,7 @@ class MainViewModelTest {
     @Test
     fun formatLimitCountdown_zeroResetsAt_returnsEmpty() {
         prefs.edit()
-            .putFloat("utilization", 1.0f)
+            .putFloat("utilization", 100.0f)
             .putLong("resets_at", 0L)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.0f)
