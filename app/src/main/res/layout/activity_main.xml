@@ -117,7 +117,7 @@
                         android:orientation="vertical"
                         android:visibility="gone">
 
-                        <!-- Usage layout: robot icons flanking progress bars -->
+                        <!-- Usage layout: robot icon + progress bars -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -126,20 +126,20 @@
                             android:gravity="center_vertical"
                             android:orientation="horizontal">
 
-                            <!-- Left robot: working -->
+                            <!-- Left robot: icon -->
                             <ImageView
-                                android:id="@+id/claudeWorkingRobot"
+                                android:id="@+id/claudeRobotIcon"
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
                                 android:contentDescription="@string/cd_working_robot"
                                 android:src="@drawable/working"
                                 android:scaleType="fitCenter" />
 
-                            <!-- Center: labels + progress bars -->
+                            <!-- Center: usage details or countdown -->
                             <LinearLayout
-                                android:layout_width="0dp"
+                                android:id="@+id/claudeUsageDetails"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
                                 android:layout_marginStart="12dp"
                                 android:layout_marginEnd="12dp"
                                 android:orientation="vertical">
@@ -180,14 +180,15 @@
                                     android:textAppearance="?attr/textAppearanceBodyMedium" />
                             </LinearLayout>
 
-                            <!-- Right robot: resting -->
-                            <ImageView
-                                android:id="@+id/claudeRestingRobot"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:contentDescription="@string/cd_resting_robot"
-                                android:src="@drawable/resting"
-                                android:scaleType="fitCenter" />
+                            <TextView
+                                android:id="@+id/claudeLimitCountdown"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:layout_gravity="center_vertical"
+                                android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                                android:visibility="gone"
+                                android:contentDescription="@string/cd_limit_countdown" />
                         </LinearLayout>
 
                         <TextView
@@ -310,7 +311,7 @@
                         android:orientation="vertical"
                         android:visibility="gone">
 
-                        <!-- Symmetric usage data: robots + progress bars -->
+                        <!-- Robot icon + progress bars -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -321,19 +322,19 @@
 
                             <!-- Left robot icon -->
                             <ImageView
-                                android:id="@+id/kimiWorkingRobot"
+                                android:id="@+id/kimiRobotIcon"
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
                                 android:layout_gravity="center_vertical"
                                 android:contentDescription="@string/cd_working_robot"
                                 android:src="@drawable/working" />
 
-                            <!-- Center: labels + progress bars -->
+                            <!-- Center: usage details or countdown -->
                             <LinearLayout
-                                android:layout_width="0dp"
+                                android:id="@+id/kimiUsageDetails"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginHorizontal="12dp"
-                                android:layout_weight="1"
                                 android:orientation="vertical">
 
                                 <!-- 5-hour resets in -->
@@ -372,14 +373,15 @@
                                     android:textAppearance="?attr/textAppearanceBodyMedium" />
                             </LinearLayout>
 
-                            <!-- Right robot icon -->
-                            <ImageView
-                                android:id="@+id/kimiRestingRobot"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
+                            <TextView
+                                android:id="@+id/kimiLimitCountdown"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
                                 android:layout_gravity="center_vertical"
-                                android:contentDescription="@string/cd_resting_robot"
-                                android:src="@drawable/resting" />
+                                android:textAppearance="?attr/textAppearanceHeadlineMedium"
+                                android:visibility="gone"
+                                android:contentDescription="@string/cd_limit_countdown" />
                         </LinearLayout>
 
                         <TextView

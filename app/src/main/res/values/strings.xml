@@ -75,6 +75,7 @@
     <string name="cd_loading">Loading indicator</string>
     <string name="cd_working_robot">Working robot icon</string>
     <string name="cd_resting_robot">Resting robot icon</string>
+    <string name="cd_limit_countdown">Time until usage limit resets</string>
 
     <!-- Formats -->
     <string name="format_with_reset">%1$s, %2$s</string>

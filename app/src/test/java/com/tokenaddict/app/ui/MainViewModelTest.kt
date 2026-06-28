@@ -275,4 +275,121 @@ class MainViewModelTest {
         val state = viewModel.kimiState.value as MainViewModel.UiState.UsageData
         assertFalse("Expected serviceChanged false for Kimi", state.serviceChanged)
     }
+
+    @Test
+    fun formatLimitCountdown_withDays_returnsDdHhMmFormat() {
+        val threeDaysFromNow = System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000
+        prefs.edit()
+            .putFloat("utilization", 1.0f)
+            .putLong("resets_at", threeDaysFromNow)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 0.0f)
+            .putLong("weekly_resets_at", 0L)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        callLoadUsageData("claude")
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertTrue("Expected dd:hh:mm format, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
+    }
+
+    @Test
+    fun formatLimitCountdown_withoutDays_returnsHhMmFormat() {
+        val fiveHoursFromNow = System.currentTimeMillis() + 5L * 60 * 60 * 1000
+        prefs.edit()
+            .putFloat("utilization", 1.0f)
+            .putLong("resets_at", fiveHoursFromNow)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 0.0f)
+            .putLong("weekly_resets_at", 0L)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        callLoadUsageData("claude")
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertTrue("Expected hh:mm format, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}")))
+    }
+
+    @Test
+    fun formatLimitCountdown_notAtLimit_returnsEmpty() {
+        val threeHoursFromNow = System.currentTimeMillis() + 3L * 60 * 60 * 1000
+        prefs.edit()
+            .putFloat("utilization", 0.5f)
+            .putLong("resets_at", threeHoursFromNow)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 0.0f)
+            .putLong("weekly_resets_at", 0L)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        callLoadUsageData("claude")
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertEquals("", state.limitCountdownText)
+    }
+
+    @Test
+    fun formatLimitCountdown_bothLimitsHit_usesLaterReset() {
+        val twoHoursFromNow = System.currentTimeMillis() + 2L * 60 * 60 * 1000
+        val fiveDaysFromNow = System.currentTimeMillis() + 5L * 24 * 60 * 60 * 1000
+        prefs.edit()
+            .putFloat("utilization", 1.0f)
+            .putLong("resets_at", twoHoursFromNow)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 1.0f)
+            .putLong("weekly_resets_at", fiveDaysFromNow)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        callLoadUsageData("claude")
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertTrue("Expected dd:hh:mm format using later reset, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
+    }
+
+    @Test
+    fun formatLimitCountdown_expiredReset_returnsEmpty() {
+        val oneHourAgo = System.currentTimeMillis() - 1L * 60 * 60 * 1000
+        prefs.edit()
+            .putFloat("utilization", 1.0f)
+            .putLong("resets_at", oneHourAgo)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 0.0f)
+            .putLong("weekly_resets_at", 0L)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        callLoadUsageData("claude")
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertEquals("", state.limitCountdownText)
+    }
+
+    @Test
+    fun formatLimitCountdown_zeroResetsAt_returnsEmpty() {
+        prefs.edit()
+            .putFloat("utilization", 1.0f)
+            .putLong("resets_at", 0L)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 0.0f)
+            .putLong("weekly_resets_at", 0L)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        callLoadUsageData("claude")
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertEquals("", state.limitCountdownText)
+    }
 }

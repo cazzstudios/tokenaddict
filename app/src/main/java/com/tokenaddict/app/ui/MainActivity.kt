@@ -27,11 +27,6 @@ import com.google.android.material.button.MaterialButton
 
 class MainActivity : AppCompatActivity() {
 
-    private companion object {
-        const val FULL_ALPHA = 1.0f
-        const val DIMMED_ALPHA = 0.35f
-    }
-
     private lateinit var viewModel: MainViewModel
 
     private val notificationPermissionLauncher = registerForActivityResult(
@@ -58,10 +53,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var kimiWeeklyResetsIn: TextView
     private lateinit var kimiLastCheckedText: TextView
 
-    private lateinit var claudeWorkingRobot: ImageView
-    private lateinit var claudeRestingRobot: ImageView
-    private lateinit var kimiWorkingRobot: ImageView
-    private lateinit var kimiRestingRobot: ImageView
+    private lateinit var claudeRobotIcon: ImageView
+    private lateinit var claudeUsageDetails: LinearLayout
+    private lateinit var claudeLimitCountdown: TextView
+    private lateinit var kimiRobotIcon: ImageView
+    private lateinit var kimiUsageDetails: LinearLayout
+    private lateinit var kimiLimitCountdown: TextView
 
     private val claudeLoginLauncher = registerForActivityResult(LoginResultContract()) { success ->
         if (success) {
@@ -130,10 +127,12 @@ class MainActivity : AppCompatActivity() {
         kimiWeeklyResetsIn = findViewById(R.id.kimiWeeklyResetsIn)
         kimiLastCheckedText = findViewById(R.id.kimiLastCheckedText)
 
-        claudeWorkingRobot = findViewById(R.id.claudeWorkingRobot)
-        claudeRestingRobot = findViewById(R.id.claudeRestingRobot)
-        kimiWorkingRobot = findViewById(R.id.kimiWorkingRobot)
-        kimiRestingRobot = findViewById(R.id.kimiRestingRobot)
+        claudeRobotIcon = findViewById(R.id.claudeRobotIcon)
+        claudeUsageDetails = findViewById(R.id.claudeUsageDetails)
+        claudeLimitCountdown = findViewById(R.id.claudeLimitCountdown)
+        kimiRobotIcon = findViewById(R.id.kimiRobotIcon)
+        kimiUsageDetails = findViewById(R.id.kimiUsageDetails)
+        kimiLimitCountdown = findViewById(R.id.kimiLimitCountdown)
     }
 
     private fun setupListeners() {
@@ -214,7 +213,7 @@ class MainActivity : AppCompatActivity() {
             "$weeklyPercent%"
         }
 
-        setRobotIconEvidence(claudeWorkingRobot, claudeRestingRobot, data.hasReachedLimit)
+        updateRobotAndCountdown(claudeRobotIcon, claudeUsageDetails, claudeLimitCountdown, data.hasReachedLimit, data.limitCountdownText)
 
         claudeLastCheckedText.text = getString(R.string.last_checked, data.lastChecked)
     }
@@ -254,14 +253,28 @@ class MainActivity : AppCompatActivity() {
             "$weeklyPercent%"
         }
 
-        setRobotIconEvidence(kimiWorkingRobot, kimiRestingRobot, data.hasReachedLimit)
+        updateRobotAndCountdown(kimiRobotIcon, kimiUsageDetails, kimiLimitCountdown, data.hasReachedLimit, data.limitCountdownText)
 
         kimiLastCheckedText.text = getString(R.string.last_checked, data.lastChecked)
     }
 
-    private fun setRobotIconEvidence(workingRobot: ImageView, restingRobot: ImageView, hasReachedLimit: Boolean) {
-        workingRobot.alpha = if (hasReachedLimit) DIMMED_ALPHA else FULL_ALPHA
-        restingRobot.alpha = if (hasReachedLimit) FULL_ALPHA else DIMMED_ALPHA
+    private fun updateRobotAndCountdown(
+        robotIcon: ImageView,
+        usageDetails: LinearLayout,
+        limitCountdown: TextView,
+        hasReachedLimit: Boolean,
+        countdownText: String
+    ) {
+        if (hasReachedLimit) {
+            robotIcon.setImageResource(R.drawable.resting)
+            usageDetails.visibility = View.GONE
+            limitCountdown.visibility = View.VISIBLE
+            limitCountdown.text = countdownText
+        } else {
+            robotIcon.setImageResource(R.drawable.working)
+            usageDetails.visibility = View.VISIBLE
+            limitCountdown.visibility = View.GONE
+        }
     }
 
     private fun buildResetLabel(percentage: String, timeRemaining: String): SpannableString {

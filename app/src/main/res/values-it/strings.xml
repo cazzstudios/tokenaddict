@@ -70,6 +70,7 @@
     <string name="cd_loading">Indicatore di caricamento</string>
     <string name="cd_working_robot">Icona robot al lavoro</string>
     <string name="cd_resting_robot">Icona robot a riposo</string>
+    <string name="cd_limit_countdown">Tempo mancante al reset del limite di utilizzo</string>
 
     <!-- Formats -->
     <string name="format_with_reset">%1$s, %2$s</string>

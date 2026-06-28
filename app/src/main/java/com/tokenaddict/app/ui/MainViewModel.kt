@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
@@ -19,6 +20,10 @@ import com.tokenaddict.app.data.model.SessionState
 import com.tokenaddict.app.worker.ClaudeUsageWorker
 import com.tokenaddict.app.worker.KimiUsageWorker
 import com.google.gson.Gson
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import java.time.Instant
 import java.util.concurrent.TimeUnit
@@ -43,7 +48,8 @@ class MainViewModel @JvmOverloads constructor(
             val weeklyResetsIn: String = "",
             val weeklyIsReset: Boolean = false,
             val hasReachedLimit: Boolean = false,
-            val serviceChanged: Boolean = false
+            val serviceChanged: Boolean = false,
+            val limitCountdownText: String = ""
         ) : UiState()
     }
 
@@ -81,6 +87,13 @@ class MainViewModel @JvmOverloads constructor(
         loadUsageData("kimi")
     }
 
+    private var claudeResetsAtMillis: Long = 0L
+    private var claudeWeeklyResetsAtMillis: Long = 0L
+    private var kimiResetsAtMillis: Long = 0L
+    private var kimiWeeklyResetsAtMillis: Long = 0L
+    private var claudeCountdownJob: Job? = null
+    private var kimiCountdownJob: Job? = null
+
     init {
         val app = getApplication<Application>()
         app.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE)
@@ -94,6 +107,8 @@ class MainViewModel @JvmOverloads constructor(
 
     override fun onCleared() {
         super.onCleared()
+        stopCountdownTimer("claude")
+        stopCountdownTimer("kimi")
         val app = getApplication<Application>()
         app.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE)
             .unregisterOnSharedPreferenceChangeListener(claudePrefsListener)
@@ -165,6 +180,54 @@ class MainViewModel @JvmOverloads constructor(
         return if (days > 0) "${days}d ${hours}h ${minutes}m" else "${hours}h ${minutes}m"
     }
 
+    private fun formatLimitCountdown(resetsAtMillis: Long): String {
+        if (resetsAtMillis <= 0) return ""
+        val remaining = resetsAtMillis - System.currentTimeMillis()
+        if (remaining <= 0) return ""
+        val days = remaining / (1000 * 60 * 60 * 24)
+        val hours = (remaining / (1000 * 60 * 60)) % 24
+        val minutes = (remaining / (1000 * 60)) % 60
+        return if (days > 0) {
+            String.format("%02d:%02d:%02d", days, hours, minutes)
+        } else {
+            String.format("%02d:%02d", hours, minutes)
+        }
+    }
+
+    private fun startCountdownTimer(providerId: String) {
+        val jobRef = if (providerId == "claude") claudeCountdownJob else kimiCountdownJob
+        jobRef?.cancel()
+        val newJob = viewModelScope.launch {
+            while (isActive) {
+                delay(60_000)
+                updateCountdown(providerId)
+            }
+        }
+        if (providerId == "claude") claudeCountdownJob = newJob
+        else kimiCountdownJob = newJob
+    }
+
+    private fun updateCountdown(providerId: String) {
+        val liveData = getStateLiveData(providerId) ?: return
+        val state = liveData.value
+        if (state !is UiState.UsageData || !state.hasReachedLimit) {
+            stopCountdownTimer(providerId)
+            return
+        }
+        val fiveHourMillis = if (providerId == "claude") claudeResetsAtMillis else kimiResetsAtMillis
+        val weeklyMillis = if (providerId == "claude") claudeWeeklyResetsAtMillis else kimiWeeklyResetsAtMillis
+        val effectiveMillis = maxOf(fiveHourMillis, weeklyMillis)
+        val countdownText = formatLimitCountdown(effectiveMillis)
+        liveData.value = state.copy(limitCountdownText = countdownText)
+    }
+
+    private fun stopCountdownTimer(providerId: String) {
+        val job = if (providerId == "claude") claudeCountdownJob else kimiCountdownJob
+        job?.cancel()
+        if (providerId == "claude") claudeCountdownJob = null
+        else kimiCountdownJob = null
+    }
+
     private fun loadUsageData(providerId: String) {
         val prefsName = if (providerId == "claude") "usage_prefs" else "usage_prefs_kimi"
         val prefs = getApplication<Application>()
@@ -179,7 +242,27 @@ class MainViewModel @JvmOverloads constructor(
         val weeklyUtilization = if (weeklyIsReset) 0.0 else prefs.getFloat("weekly_utilization", 0f).toDouble()
         val weeklyResetsAtMillis = prefs.getLong("weekly_resets_at", 0L)
 
-        val hasReachedLimit = utilization >= 100.0 || weeklyUtilization >= 100.0
+        if (providerId == "claude") {
+            claudeResetsAtMillis = resetsAtMillis
+            claudeWeeklyResetsAtMillis = weeklyResetsAtMillis
+        } else {
+            kimiResetsAtMillis = resetsAtMillis
+            kimiWeeklyResetsAtMillis = weeklyResetsAtMillis
+        }
+
+        val hasReachedLimit = utilization >= 1.0 || weeklyUtilization >= 1.0
+
+        val limitCountdownText = if (hasReachedLimit) {
+            val effectiveMillis = maxOf(resetsAtMillis, weeklyResetsAtMillis)
+            formatLimitCountdown(effectiveMillis)
+        } else {
+            stopCountdownTimer(providerId)
+            ""
+        }
+
+        if (hasReachedLimit) {
+            startCountdownTimer(providerId)
+        }
 
         val serviceChanged = if (providerId == "claude") {
             prefs.getBoolean("claude_service_changed", false)
@@ -219,7 +302,8 @@ class MainViewModel @JvmOverloads constructor(
             weeklyResetsIn = weeklyResetsIn,
             weeklyIsReset = weeklyIsReset,
             hasReachedLimit = hasReachedLimit,
-            serviceChanged = serviceChanged
+            serviceChanged = serviceChanged,
+            limitCountdownText = limitCountdownText
         )
     }
 
