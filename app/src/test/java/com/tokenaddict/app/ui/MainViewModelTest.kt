@@ -312,8 +312,8 @@ class MainViewModelTest {
         callLoadUsageData("claude")
 
         val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
-        assertTrue("Expected hh:mm format, got: ${state.limitCountdownText}",
-            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}")))
+        assertTrue("Expected hh:mm:ss format, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
     }
 
     @Test
