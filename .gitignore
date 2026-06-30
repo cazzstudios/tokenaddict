@@ -1,0 +1,37 @@
+# Android / Gradle
+.gradle/
+build/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+bin/
+gen/
+.apt_generated/
+.cxx/
+*.iml
+.navigation/
+captures/
+.externalNativeBuild/
+
+# Kotlin
+.kotlin/
+
+# IDE
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local config
+local.properties
+
+# Sisyphus tooling
+.sisyphus/
+
+# Debug
+*.hprof
