@@ -6,6 +6,8 @@ import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
@@ -141,23 +143,35 @@ class MainViewModel @JvmOverloads constructor(
             val workRequest = OneTimeWorkRequestBuilder<ClaudeUsageWorker>().build()
             val workManager = WorkManager.getInstance(getApplication())
             workManager.enqueue(workRequest)
-            workManager.getWorkInfoByIdLiveData(workRequest.id)
-                .observeForever { workInfo ->
+            val workLiveData = workManager.getWorkInfoByIdLiveData(workRequest.id)
+            val observer = object : Observer<WorkInfo?> {
+                override fun onChanged(workInfo: WorkInfo?) {
                     if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
                         loadUsageData("claude")
                     }
+                    if (workInfo == null || workInfo.state.isFinished) {
+                        workLiveData.removeObserver(this)
+                    }
                 }
+            }
+            workLiveData.observeForever(observer)
         }
         if (providerId == null || providerId == "kimi") {
             val workRequest = OneTimeWorkRequestBuilder<KimiUsageWorker>().build()
             val workManager = WorkManager.getInstance(getApplication())
             workManager.enqueue(workRequest)
-            workManager.getWorkInfoByIdLiveData(workRequest.id)
-                .observeForever { workInfo ->
+            val workLiveData = workManager.getWorkInfoByIdLiveData(workRequest.id)
+            val observer = object : Observer<WorkInfo?> {
+                override fun onChanged(workInfo: WorkInfo?) {
                     if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
                         loadUsageData("kimi")
                     }
+                    if (workInfo == null || workInfo.state.isFinished) {
+                        workLiveData.removeObserver(this)
+                    }
                 }
+            }
+            workLiveData.observeForever(observer)
         }
     }
 
@@ -237,8 +251,19 @@ class MainViewModel @JvmOverloads constructor(
             listOf("claude", "kimi").forEach { providerId ->
                 val liveData = getStateLiveData(providerId) ?: return@forEach
                 val state = liveData.value
-                if (state is UiState.UsageData && state.hasReachedLimit) {
-                    startCountdownTimer(providerId)
+                when (state) {
+                    is UiState.UsageData -> {
+                        if (state.hasReachedLimit) {
+                            startCountdownTimer(providerId)
+                        }
+                    }
+                    is UiState.Loading -> {
+                        // WorkManager worker may have been delayed (Doze/battery).
+                        // Re-check SharedPreferences in case the worker wrote data
+                        // while the app was paused, or re-trigger refresh if not.
+                        loadUsageData(providerId)
+                    }
+                    else -> { /* LoggedOut or null — nothing to do */ }
                 }
             }
         } else {
