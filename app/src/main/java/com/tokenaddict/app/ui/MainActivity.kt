@@ -1,6 +1,7 @@
 package com.tokenaddict.app.ui
 
 import android.Manifest
+import android.app.AlarmManager
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -8,6 +9,7 @@ import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.text.Spannable
 import android.text.SpannableString
@@ -93,12 +95,14 @@ class MainActivity : AppCompatActivity() {
     private val claudeLoginLauncher = registerForActivityResult(LoginResultContract()) { success ->
         if (success) {
             viewModel.checkSession("claude")
+            checkPermissionsAfterLogin()
         }
     }
 
     private val kimiLoginLauncher = registerForActivityResult(KimiLoginResultContract()) { success ->
         if (success) {
             viewModel.checkSession("kimi")
+            checkPermissionsAfterLogin()
         }
     }
 
@@ -126,6 +130,64 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         viewModel.onForegroundChanged(false)
+    }
+
+    private fun checkPermissionsAfterLogin() {
+        if (hasShownPostLoginPermissionDialog()) return
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                showPermissionDialog()
+                return
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) {
+                showPermissionDialog()
+                return
+            }
+        }
+
+        val powerManager = getSystemService(POWER_SERVICE) as PowerManager
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            showPermissionDialog()
+            return
+        }
+    }
+
+    private fun showPermissionDialog() {
+        markPostLoginPermissionDialogShown()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.permission_dialog_title)
+            .setMessage(R.string.permission_dialog_message)
+            .setPositiveButton(R.string.permission_dialog_open_settings) { _, _ ->
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton(R.string.permission_dialog_not_now, null)
+            .show()
+    }
+
+    private fun getPermissionPrefs(): SharedPreferences {
+        return getSharedPreferences(PERMISSION_DIALOG_PREFS, MODE_PRIVATE)
+    }
+
+    private fun hasShownPostLoginPermissionDialog(): Boolean {
+        return getPermissionPrefs().getBoolean(KEY_PERMISSION_DIALOG_SHOWN, false)
+    }
+
+    private fun markPostLoginPermissionDialogShown() {
+        getPermissionPrefs().edit()
+            .putBoolean(KEY_PERMISSION_DIALOG_SHOWN, true)
+            .apply()
     }
 
     private fun requestNotificationPermissionIfNeeded() {
@@ -565,5 +627,7 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val NOTIFICATION_PERMISSION_PREFS = "notification_permission_prefs"
         private const val KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"
+        private const val PERMISSION_DIALOG_PREFS = "permission_dialog_prefs"
+        private const val KEY_PERMISSION_DIALOG_SHOWN = "permission_dialog_shown"
     }
 }
