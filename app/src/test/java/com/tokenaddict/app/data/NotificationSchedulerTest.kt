@@ -52,6 +52,9 @@ class NotificationSchedulerTest {
         MockitoAnnotations.openMocks(this)
 
         `when`(mockContext.getSystemService(Context.ALARM_SERVICE)).thenReturn(mockAlarmManager)
+        // Grant exact alarm permission by default so scheduleResetNotification tests pass.
+        // Individual tests can override this if they need to test the denied path.
+        `when`(mockAlarmManager.canScheduleExactAlarms()).thenReturn(true)
         `when`(mockContext.getSharedPreferences(anyString(), anyInt()))
             .thenReturn(mockSharedPreferences)
         `when`(mockSharedPreferences.edit()).thenReturn(mockEditor)

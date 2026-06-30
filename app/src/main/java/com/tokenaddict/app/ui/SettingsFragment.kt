@@ -1,7 +1,10 @@
 package com.tokenaddict.app.ui
 
+import android.app.AlarmManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import androidx.preference.Preference
@@ -16,6 +19,7 @@ import com.tokenaddict.app.TokenAddictApplication
 import com.tokenaddict.app.data.NotificationScheduler
 import com.tokenaddict.app.worker.ClaudeUsageWorker
 import com.tokenaddict.app.worker.KimiUsageWorker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.concurrent.TimeUnit
 
 class SettingsFragment : PreferenceFragmentCompat() {
@@ -45,17 +49,26 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private fun openBatteryOptimizationSettings() {
         val context = requireContext()
         val powerManager = context.getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
-        if (!powerManager.isIgnoringBatteryOptimizations(context.packageName)) {
-            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                data = Uri.parse("package:${context.packageName}")
-            }
-            startActivity(intent)
-        } else {
+
+        if (powerManager.isIgnoringBatteryOptimizations(context.packageName)) {
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.parse("package:${context.packageName}")
             }
             startActivity(intent)
+            return
         }
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.battery_optimization_dialog_title)
+            .setMessage(R.string.battery_optimization_dialog_message)
+            .setPositiveButton(R.string.battery_optimization_dialog_confirm) { _, _ ->
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                    data = Uri.parse("package:${context.packageName}")
+                }
+                startActivity(intent)
+            }
+            .setNegativeButton(R.string.battery_optimization_dialog_cancel, null)
+            .show()
     }
 
     private fun setupPollingIntervalPreference() {
@@ -72,14 +85,34 @@ class SettingsFragment : PreferenceFragmentCompat() {
         findPreference<SwitchPreferenceCompat>(preferenceKey)?.apply {
             setOnPreferenceChangeListener { _, newValue ->
                 val enabled = newValue as Boolean
-                val scheduler = NotificationScheduler(requireContext(), providerId)
-                if (enabled) {
-                    val resetTime = scheduler.getScheduledResetTime()
-                    if (resetTime != null && resetTime > System.currentTimeMillis()) {
-                        scheduler.scheduleResetNotification(resetTime)
-                    }
-                } else {
+                if (!enabled) {
+                    val scheduler = NotificationScheduler(requireContext(), providerId)
                     scheduler.cancelResetNotification()
+                    return@setOnPreferenceChangeListener true
+                }
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                    if (!alarmManager.canScheduleExactAlarms()) {
+                        MaterialAlertDialogBuilder(requireContext())
+                            .setTitle(R.string.exact_alarm_dialog_title)
+                            .setMessage(R.string.exact_alarm_dialog_message)
+                            .setPositiveButton(R.string.exact_alarm_dialog_confirm) { _, _ ->
+                                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                                    data = Uri.parse("package:${requireContext().packageName}")
+                                }
+                                startActivity(intent)
+                            }
+                            .setNegativeButton(R.string.exact_alarm_dialog_cancel, null)
+                            .show()
+                        return@setOnPreferenceChangeListener false
+                    }
+                }
+
+                val scheduler = NotificationScheduler(requireContext(), providerId)
+                val resetTime = scheduler.getScheduledResetTime()
+                if (resetTime != null && resetTime > System.currentTimeMillis()) {
+                    scheduler.scheduleResetNotification(resetTime)
                 }
                 true
             }

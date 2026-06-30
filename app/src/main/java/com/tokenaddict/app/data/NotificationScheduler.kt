@@ -7,7 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.provider.Settings
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.preference.PreferenceManager
@@ -20,6 +20,7 @@ import com.tokenaddict.app.ui.LoginActivity
 class NotificationScheduler(private val context: Context, private val providerId: String = "claude") {
 
     companion object {
+        private const val TAG = "NotificationScheduler"
         private const val NOTIFICATION_ID_CLAUDE = 1001
         private const val NOTIFICATION_ID_KIMI = 1002
         private const val NOTIFICATION_ID_RELOGIN_CLAUDE = 2001
@@ -60,10 +61,8 @@ class NotificationScheduler(private val context: Context, private val providerId
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!alarmManager.canScheduleExactAlarms()) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(intent)
+                Log.w(TAG, "scheduleResetNotification: missing SCHEDULE_EXACT_ALARM permission — cannot schedule exact alarm")
+                return
             }
         }
 
