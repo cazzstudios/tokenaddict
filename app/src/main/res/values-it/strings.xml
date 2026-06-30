@@ -74,6 +74,22 @@
     <string name="notification_enabled_kimi_summary">Notifica quando il limite di utilizzo di Kimi viene reimpostato</string>
     <string name="battery_optimization_title">Ottimizzazione Batteria</string>
     <string name="battery_optimization_summary">Disabilita l’ottimizzazione della batteria per notifiche affidabili</string>
+    <string name="battery_optimization_dialog_title">Disabilita Ottimizzazione Batteria</string>
+    <string name="battery_optimization_dialog_message">Token Addict deve controllare il tuo utilizzo in background per inviare notifiche tempestive quando i tuoi limiti vengono reimpostati. L\'ottimizzazione della batteria di Android può ritardare questi controlli.\n\nDisabilitare l\'ottimizzazione della batteria per Token Addict garantisce che tu riceva le notifiche non appena i tuoi limiti di utilizzo vengono reimpostati.</string>
+    <string name="battery_optimization_dialog_confirm">Apri Impostazioni</string>
+    <string name="battery_optimization_dialog_cancel">Non Ora</string>
+
+    <!-- Schedule Exact Alarm Dialog -->
+    <string name="exact_alarm_dialog_title">Consenti Allarmi Esatti</string>
+    <string name="exact_alarm_dialog_message">Token Addict utilizza allarmi esatti per avvisarti nel momento esatto in cui i tuoi limiti di utilizzo vengono reimpostati. Android richiede un\'autorizzazione esplicita per questo.\n\nSenza questa autorizzazione, le notifiche di reset potrebbero subire ritardi.</string>
+    <string name="exact_alarm_dialog_confirm">Apri Impostazioni</string>
+    <string name="exact_alarm_dialog_cancel">Non Ora</string>
+
+    <!-- Post-Login Permission Dialog -->
+    <string name="permission_dialog_title">Configura Notifiche</string>
+    <string name="permission_dialog_message">Token Addict monitora i tuoi limiti di utilizzo di Claude e Kimi in background. Per inviarti notifiche tempestive quando vengono reimpostati, l\'app ha bisogno di alcune autorizzazioni.\n\nControllale e concedile nelle impostazioni di sistema.</string>
+    <string name="permission_dialog_open_settings">Apri Impostazioni App</string>
+    <string name="permission_dialog_not_now">Non Ora</string>
     <string name="about_title">Informazioni</string>
     <string name="about_summary">Token Addict v1.0</string>
 

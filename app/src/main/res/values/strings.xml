@@ -80,6 +80,22 @@
     <string name="notification_enabled_kimi_summary">Notify when Kimi usage limit resets</string>
     <string name="battery_optimization_title">Battery Optimization</string>
     <string name="battery_optimization_summary">Disable battery optimization for reliable notifications</string>
+    <string name="battery_optimization_dialog_title">Disable Battery Optimization</string>
+    <string name="battery_optimization_dialog_message">Token Addict needs to check your usage in the background to send timely notifications when your limits reset. Android\'s battery optimization can delay these checks.\n\nDisabling battery optimization for Token Addict ensures you receive notifications as soon as your usage limits reset.</string>
+    <string name="battery_optimization_dialog_confirm">Open Settings</string>
+    <string name="battery_optimization_dialog_cancel">Not Now</string>
+
+    <!-- Schedule Exact Alarm Dialog -->
+    <string name="exact_alarm_dialog_title">Allow Exact Alarms</string>
+    <string name="exact_alarm_dialog_message">Token Addict uses exact alarms to notify you the moment your usage limits reset. Android requires explicit permission for this.\n\nWithout this permission, reset notifications may be delayed.</string>
+    <string name="exact_alarm_dialog_confirm">Open Settings</string>
+    <string name="exact_alarm_dialog_cancel">Not Now</string>
+
+    <!-- Post-Login Permission Dialog -->
+    <string name="permission_dialog_title">Set Up Notifications</string>
+    <string name="permission_dialog_message">Token Addict monitors your Claude and Kimi usage limits in the background. To send you timely notifications when they reset, the app needs a few permissions.\n\nPlease review and grant them in the system settings.</string>
+    <string name="permission_dialog_open_settings">Open App Settings</string>
+    <string name="permission_dialog_not_now">Not Now</string>
     <string name="about_title">About</string>
     <string name="about_summary">Token Addict v1.0</string>
 
