@@ -118,6 +118,16 @@ class MainActivity : AppCompatActivity() {
         observeUiState()
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.onForegroundChanged(true)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        viewModel.onForegroundChanged(false)
+    }
+
     private fun requestNotificationPermissionIfNeeded() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             when {
@@ -393,34 +403,42 @@ class MainActivity : AppCompatActivity() {
         hasReachedLimit: Boolean,
         countdownText: String
     ) {
-        if (hasReachedLimit) {
-            robotIcon.setImageResource(R.drawable.resting)
-
-            val parts = countdownText.split(":")
-            val useLongFormat = parts.size == 3 && (parts[0].toIntOrNull() ?: 0) > 0
-
-            if (useLongFormat) {
-                longDays.setDigitValue(parts[0].toIntOrNull() ?: 0)
-                longHours.setDigitValue(parts[1].toIntOrNull() ?: 0)
-                longMinutes.setDigitValue(parts[2].toIntOrNull() ?: 0)
-                crossfade(usageDetails, countdownLongContainer)
-                countdownShortContainer.visibility = View.GONE
-            } else {
-                val hours = if (parts.size >= 1) parts[0].toIntOrNull() ?: 0 else 0
-                val minutes = if (parts.size >= 2) parts[1].toIntOrNull() ?: 0 else 0
-                val seconds = if (parts.size >= 3) parts[2].toIntOrNull() ?: 0 else 0
-                shortHours.setDigitValue(hours)
-                shortMinutes.setDigitValue(minutes)
-                shortSeconds.setDigitValue(seconds)
-                crossfade(usageDetails, countdownShortContainer)
-                countdownLongContainer.visibility = View.GONE
-            }
-        } else {
+        if (!hasReachedLimit) {
             robotIcon.setImageResource(R.drawable.working)
             countdownShortContainer.visibility = View.GONE
             countdownLongContainer.visibility = View.GONE
             usageDetails.visibility = View.VISIBLE
             usageDetails.alpha = 1f
+            return
+        }
+
+        robotIcon.setImageResource(R.drawable.resting)
+
+        val parts = countdownText.split(":")
+        val useLongFormat = parts.size == 4
+
+        if (useLongFormat) {
+            longDays.setDigitValue(parts[0].toIntOrNull() ?: 0, animate = false)
+            longHours.setDigitValue(parts[1].toIntOrNull() ?: 0, animate = false)
+            longMinutes.setDigitValue(parts[2].toIntOrNull() ?: 0, animate = false)
+            if (countdownLongContainer.visibility != View.VISIBLE) {
+                countdownShortContainer.visibility = View.GONE
+                crossfade(usageDetails, countdownLongContainer)
+            } else {
+                usageDetails.visibility = View.GONE
+                countdownShortContainer.visibility = View.GONE
+            }
+        } else {
+            shortHours.setDigitValue(parts[0].toIntOrNull() ?: 0, animate = false)
+            shortMinutes.setDigitValue(parts[1].toIntOrNull() ?: 0, animate = false)
+            shortSeconds.setDigitValue(parts[2].toIntOrNull() ?: 0, animate = false)
+            if (countdownShortContainer.visibility != View.VISIBLE) {
+                countdownLongContainer.visibility = View.GONE
+                crossfade(usageDetails, countdownShortContainer)
+            } else {
+                usageDetails.visibility = View.GONE
+                countdownLongContainer.visibility = View.GONE
+            }
         }
     }
 

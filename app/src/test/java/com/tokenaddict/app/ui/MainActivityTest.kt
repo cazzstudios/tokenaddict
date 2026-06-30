@@ -151,7 +151,7 @@ class MainActivityTest {
     @Test
     fun longCountdown_showsLongContainer() {
         val activity = launchActivity()
-        setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "02:02:00")
+        setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "01:02:02:00")
 
         val longContainer = activity.findViewById<View>(R.id.claudeCountdownLongContainer)
         assertEquals(View.VISIBLE, longContainer.visibility)
@@ -196,7 +196,7 @@ class MainActivityTest {
         val controller = Robolectric.buildActivity(MainActivity::class.java)
             .create().start().resume()
         val activity = controller.get()
-        setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "02:02:00")
+        setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "01:02:02:00")
 
         val longContainerBefore = activity.findViewById<View>(R.id.claudeCountdownLongContainer)
         assertEquals(View.VISIBLE, longContainerBefore.visibility)

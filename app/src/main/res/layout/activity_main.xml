@@ -405,13 +405,13 @@
                                         android:contentDescription="@string/cd_countdown_minutes" />
 
                                     <TextView
-                                        android:id="@+id/claudeLongMinutesLabel"
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:gravity="center"
-                                        android:text="@string/countdown_minutes"
-                                        android:textSize="10sp"
-                                        android:textColor="?attr/colorOnSurfaceVariant" />
+        android:id="@+id/claudeLongMinutesLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/countdown_minutes"
+        android:textSize="10sp"
+        android:textColor="?attr/colorOnSurfaceVariant" />
                                 </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
