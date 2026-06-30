@@ -277,7 +277,7 @@ class MainViewModelTest {
     }
 
     @Test
-    fun formatLimitCountdown_withDays_returnsDdHhMmFormat() {
+    fun formatLimitCountdown_withDays_returnsDdHhMmSsFormat() {
         val threeDaysFromNow = System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000
         prefs.edit()
             .putFloat("utilization", 100.0f)
@@ -292,16 +292,16 @@ class MainViewModelTest {
         callLoadUsageData("claude")
 
         val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
-        assertTrue("Expected dd:hh:mm format, got: ${state.limitCountdownText}",
-            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
+        assertTrue("Expected dd:hh:mm:ss format, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}:\\d{2}")))
     }
 
     @Test
-    fun formatLimitCountdown_withoutDays_returnsHhMmFormat() {
-        val fiveHoursFromNow = System.currentTimeMillis() + 5L * 60 * 60 * 1000
+    fun formatLimitCountdown_withDays_returnsHhMmSsSsFormat() {
+        val threeDaysFromNow = System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000
         prefs.edit()
             .putFloat("utilization", 100.0f)
-            .putLong("resets_at", fiveHoursFromNow)
+            .putLong("resets_at", threeDaysFromNow)
             .putBoolean("is_reset", false)
             .putFloat("weekly_utilization", 0.0f)
             .putLong("weekly_resets_at", 0L)
@@ -312,8 +312,29 @@ class MainViewModelTest {
         callLoadUsageData("claude")
 
         val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
-        assertTrue("Expected hh:mm:ss format, got: ${state.limitCountdownText}",
+        assertTrue("Expected hh:mm:ss:ss format (dd:hh:mm:ss), got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}:\\d{2}")))
+    }
+
+    @Test
+    fun formatLimitCountdown_lessThanOneDay_returnsHhMmSsFormat() {
+        val tenHoursFromNow = System.currentTimeMillis() + 10L * 60 * 60 * 1000
+        prefs.edit()
+            .putFloat("utilization", 100.0f)
+            .putLong("resets_at", tenHoursFromNow)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 0.0f)
+            .putLong("weekly_resets_at", 0L)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        callLoadUsageData("claude")
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertTrue("Expected hh:mm:ss format for less than 1 day, got: ${state.limitCountdownText}",
             state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
+        assertFalse("Should not show days when less than 1 day", state.limitCountdownText.contains("days"))
     }
 
     @Test
@@ -336,6 +357,26 @@ class MainViewModelTest {
     }
 
     @Test
+    fun formatLimitCountdown_lessThanOneDay_showsHhMmSs_only() {
+        val tenHoursFromNow = System.currentTimeMillis() + 10L * 60 * 60 * 1000
+        prefs.edit()
+            .putFloat("utilization", 100.0f)
+            .putLong("resets_at", tenHoursFromNow)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 0.0f)
+            .putLong("weekly_resets_at", 0L)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        callLoadUsageData("claude")
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertTrue("Expected hh:mm:ss format for less than 1 day, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
+    }
+
+    @Test
     fun formatLimitCountdown_bothLimitsHit_usesLaterReset() {
         val twoHoursFromNow = System.currentTimeMillis() + 2L * 60 * 60 * 1000
         val fiveDaysFromNow = System.currentTimeMillis() + 5L * 24 * 60 * 60 * 1000
@@ -352,8 +393,8 @@ class MainViewModelTest {
         callLoadUsageData("claude")
 
         val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
-        assertTrue("Expected dd:hh:mm format using later reset, got: ${state.limitCountdownText}",
-            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
+        assertTrue("Expected dd:hh:mm:ss format using later reset, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}:\\d{2}")))
     }
 
     @Test

@@ -93,6 +93,7 @@ class MainViewModel @JvmOverloads constructor(
     private var kimiWeeklyResetsAtMillis: Long = 0L
     private var claudeCountdownJob: Job? = null
     private var kimiCountdownJob: Job? = null
+    private var isForeground = true
 
     init {
         val app = getApplication<Application>()
@@ -189,7 +190,7 @@ class MainViewModel @JvmOverloads constructor(
         val minutes = (remaining / (1000 * 60)) % 60
         val seconds = (remaining / 1000) % 60
         return if (days > 0) {
-            String.format("%02d:%02d:%02d", days, hours, minutes)
+            String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
         } else {
             String.format("%02d:%02d:%02d", hours, minutes, seconds)
         }
@@ -200,7 +201,8 @@ class MainViewModel @JvmOverloads constructor(
         jobRef?.cancel()
         val newJob = viewModelScope.launch {
             while (isActive) {
-                delay(60_000)
+                if (!isForeground) break
+                delay(1_000)
                 updateCountdown(providerId)
             }
         }
@@ -227,6 +229,22 @@ class MainViewModel @JvmOverloads constructor(
         job?.cancel()
         if (providerId == "claude") claudeCountdownJob = null
         else kimiCountdownJob = null
+    }
+
+    fun onForegroundChanged(isForeground: Boolean) {
+        this.isForeground = isForeground
+        if (isForeground) {
+            listOf("claude", "kimi").forEach { providerId ->
+                val liveData = getStateLiveData(providerId) ?: return@forEach
+                val state = liveData.value
+                if (state is UiState.UsageData && state.hasReachedLimit) {
+                    startCountdownTimer(providerId)
+                }
+            }
+        } else {
+            stopCountdownTimer("claude")
+            stopCountdownTimer("kimi")
+        }
     }
 
     private fun loadUsageData(providerId: String) {
