@@ -2,8 +2,6 @@ package com.tokenaddict.app.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.WebChromeClient
@@ -17,7 +15,13 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.tokenaddict.app.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.tokenaddict.app.data.KimiOAuthManager
 import com.tokenaddict.app.data.KimiTokenManager
 import com.tokenaddict.app.data.SecurePreferences
@@ -43,7 +47,6 @@ class KimiLoginActivity : AppCompatActivity() {
     private var verificationUriComplete: String? = null
     private var pollIntervalMs = BASE_POLL_INTERVAL_MS
     private var isPolling = false
-    private val handler = Handler(Looper.getMainLooper())
 
     private fun configureCookiesForUrl(view: WebView?, url: String?) {
         val host = try { android.net.Uri.parse(url ?: "").host } catch (_: Exception) { null }
@@ -59,6 +62,9 @@ class KimiLoginActivity : AppCompatActivity() {
         @JvmStatic
         internal var securePrefsFactory: ((android.content.Context, String) -> SecurePreferences)? = null
 
+        @JvmStatic
+        internal var oauthManagerFactory: ((OkHttpClient, Gson) -> KimiOAuthManager)? = null
+
         private val LOGIN_OAUTH_DOMAINS = listOf(
             "accounts.google.com",
             "auth.kimi.com",
@@ -72,7 +78,8 @@ class KimiLoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_kimi_login)
 
         gson = Gson()
-        oauthManager = KimiOAuthManager(OkHttpClient(), gson)
+        oauthManager = oauthManagerFactory?.invoke(OkHttpClient(), gson)
+            ?: KimiOAuthManager(OkHttpClient(), gson)
 
         val securePrefs = securePrefsFactory?.invoke(this, SecurePreferences.PLAINTEXT_PREFS_NAME)
             ?: SecurePreferences.create(this, SecurePreferences.PLAINTEXT_PREFS_NAME)
@@ -148,7 +155,7 @@ class KimiLoginActivity : AppCompatActivity() {
         webViewContainer.visibility = View.GONE
         webViewHelperText.visibility = View.GONE
 
-        Thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val response = oauthManager.requestDeviceCode()
                 deviceCode = response.deviceCode
@@ -157,7 +164,7 @@ class KimiLoginActivity : AppCompatActivity() {
                 verificationUriComplete = response.verificationUriComplete
                 pollIntervalMs = BASE_POLL_INTERVAL_MS
 
-                runOnUiThread {
+                withContext(Dispatchers.Main) {
                     webViewContainer.visibility = View.VISIBLE
                     webViewHelperText.visibility = View.VISIBLE
 
@@ -165,12 +172,12 @@ class KimiLoginActivity : AppCompatActivity() {
                     startPolling()
                 }
             } catch (e: Exception) {
-                runOnUiThread {
+                withContext(Dispatchers.Main) {
                     showLoading(false)
                     retryButton.visibility = View.VISIBLE
                 }
             }
-        }.start()
+        }
     }
 
     private fun startPolling() {
@@ -182,56 +189,47 @@ class KimiLoginActivity : AppCompatActivity() {
         if (!isPolling) return
         val code = deviceCode ?: return
 
-        Thread {
-            try {
-                val tokenResponse = oauthManager.pollForToken(code)
+        lifecycleScope.launch(Dispatchers.IO) {
+            while (isActive && isPolling) {
+                try {
+                    val tokenResponse = oauthManager.pollForToken(code)
 
-                if (tokenResponse.accessToken != null) {
-                    val oauthTokens = KimiOAuthTokens(
-                        accessToken = tokenResponse.accessToken,
-                        refreshToken = tokenResponse.refreshToken ?: "",
-                        expiresAt = System.currentTimeMillis() + ((tokenResponse.expiresIn ?: 3600L) * 1000)
-                    )
-                    tokenManager.saveTokens(oauthTokens)
-
-                    runOnUiThread {
-                        isPolling = false
-                        showLoading(false)
-                        setResult(RESULT_OK)
-                        finish()
+                    withContext(Dispatchers.Main) {
+                        if (tokenResponse.accessToken != null) {
+                            val oauthTokens = KimiOAuthTokens(
+                                accessToken = tokenResponse.accessToken,
+                                refreshToken = tokenResponse.refreshToken ?: "",
+                                expiresAt = System.currentTimeMillis() + ((tokenResponse.expiresIn ?: 3600L) * 1000)
+                            )
+                            tokenManager.saveTokens(oauthTokens)
+                            isPolling = false
+                            showLoading(false)
+                            setResult(RESULT_OK)
+                            finish()
+                        } else if (tokenResponse.error == "authorization_pending") {
+                            delay(pollIntervalMs)
+                        } else if (tokenResponse.error == "slow_down") {
+                            pollIntervalMs += SLOW_DOWN_INCREMENT_MS
+                            delay(pollIntervalMs)
+                        } else if (tokenResponse.error == "expired_token") {
+                            isPolling = false
+                            showLoading(false)
+                            retryButton.visibility = View.VISIBLE
+                        } else if (tokenResponse.error == "access_denied") {
+                            isPolling = false
+                            showLoading(false)
+                            retryButton.visibility = View.VISIBLE
+                        } else {
+                            delay(pollIntervalMs)
+                        }
                     }
-                } else if (tokenResponse.error == "authorization_pending") {
-                    runOnUiThread {
-                        handler.postDelayed({ pollForToken() }, pollIntervalMs)
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        delay(pollIntervalMs * 2)
                     }
-                } else if (tokenResponse.error == "slow_down") {
-                    pollIntervalMs += SLOW_DOWN_INCREMENT_MS
-                    runOnUiThread {
-                        handler.postDelayed({ pollForToken() }, pollIntervalMs)
-                    }
-                } else if (tokenResponse.error == "expired_token") {
-                    runOnUiThread {
-                        isPolling = false
-                        showLoading(false)
-                        retryButton.visibility = View.VISIBLE
-                    }
-                } else if (tokenResponse.error == "access_denied") {
-                    runOnUiThread {
-                        isPolling = false
-                        showLoading(false)
-                        retryButton.visibility = View.VISIBLE
-                    }
-                } else {
-                    runOnUiThread {
-                        handler.postDelayed({ pollForToken() }, pollIntervalMs)
-                    }
-                }
-            } catch (e: Exception) {
-                runOnUiThread {
-                    handler.postDelayed({ pollForToken() }, pollIntervalMs * 2)
                 }
             }
-        }.start()
+        }
     }
 
     private fun showLoading(loading: Boolean) {
@@ -243,15 +241,14 @@ class KimiLoginActivity : AppCompatActivity() {
         WebStorage.getInstance().deleteAllData()
 
         cookieManager.removeAllCookies { _ ->
-            runOnUiThread {
+            lifecycleScope.launch(Dispatchers.Main) {
                 cookieManager.flush()
                 webView.clearCache(true)
                 webView.clearHistory()
                 webView.clearFormData()
                 webView.loadUrl("about:blank")
-                handler.postDelayed({
-                    webView.loadUrl(url)
-                }, 1000)
+                delay(1000)
+                webView.loadUrl(url)
             }
         }
     }
@@ -259,7 +256,6 @@ class KimiLoginActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         isPolling = false
-        handler.removeCallbacksAndMessages(null)
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, false)
     }
 }
