@@ -10,6 +10,7 @@ import android.view.ViewPropertyAnimator
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.appcompat.widget.AppCompatTextView
 import com.google.android.material.color.MaterialColors
+import java.util.Locale
 
 /**
  * A two-digit countdown segment that displays an integer 0–99 formatted as "%02d"
@@ -55,7 +56,7 @@ class CountdownDigitView @JvmOverloads constructor(
 
         if (!animate || !isAnimationEnabled()) {
             cancelCurrentAnimation()
-            text = String.format("%02d", clamped)
+            text = String.format(Locale.ROOT, "%02d", clamped)
             return
         }
 
@@ -68,7 +69,7 @@ class CountdownDigitView @JvmOverloads constructor(
             .setDuration(125L)
             .setInterpolator(FastOutSlowInInterpolator())
             .withEndAction {
-                text = String.format("%02d", clamped)
+                text = String.format(Locale.ROOT, "%02d", clamped)
                 scaleX = 1.2f
                 scaleY = 1.2f
                 alpha = 0f

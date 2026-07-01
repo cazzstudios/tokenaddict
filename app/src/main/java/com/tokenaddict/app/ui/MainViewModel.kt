@@ -31,6 +31,7 @@ import java.time.Instant
 import java.util.concurrent.TimeUnit
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class MainViewModel @JvmOverloads constructor(
     application: Application,
@@ -204,9 +205,9 @@ class MainViewModel @JvmOverloads constructor(
         val minutes = (remaining / (1000 * 60)) % 60
         val seconds = (remaining / 1000) % 60
         return if (days > 0) {
-            String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
+            String.format(Locale.ROOT, "%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
         } else {
-            String.format("%02d:%02d:%02d", hours, minutes, seconds)
+            String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, seconds)
         }
     }
 
