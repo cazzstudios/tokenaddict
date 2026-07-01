@@ -37,7 +37,7 @@ class SecurePreferencesTest {
         securePrefs.putString("token", "secret-value")
 
         verify(mockEditor).putString("token", "secret-value")
-        verify(mockEditor).commit()
+        verify(mockEditor).apply()
         assertEquals("secret-value", securePrefs.getString("token"))
     }
 

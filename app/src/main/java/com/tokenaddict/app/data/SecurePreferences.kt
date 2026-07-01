@@ -72,7 +72,7 @@ class SecurePreferences private constructor(
 
     fun putString(key: String, value: String) {
         try {
-            prefs.edit().putString(key, value).commit()
+            prefs.edit().putString(key, value).apply()
         } catch (e: Exception) {
             throw SecureStorageException("Failed to write key '$key'", e)
         }
