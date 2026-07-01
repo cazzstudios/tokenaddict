@@ -10,7 +10,7 @@ import com.tokenaddict.app.data.model.UsageInfo
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.time.OffsetDateTime
+import com.tokenaddict.app.data.TimeUtils
 
 open class KimiProvider(
     private val client: OkHttpClient,
@@ -45,17 +45,7 @@ open class KimiProvider(
         // --- Weekly fields from response.usage ---
         val weeklyUtilization = parseUtilization(usage?.limit, usage?.remaining, usage?.used)
         val weeklyResetsAt = usage?.resetTime ?: response.resetTime
-        var weeklyIsReset = false
-        if (weeklyResetsAt != null) {
-            try {
-                val resetTime = OffsetDateTime.parse(weeklyResetsAt).toInstant()
-                if (resetTime.isBefore(java.time.Instant.now())) {
-                    weeklyIsReset = true
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to parse weekly resetTime: $weeklyResetsAt", e)
-            }
-        }
+        val (_, weeklyIsReset) = TimeUtils.computeResetState(weeklyResetsAt, TAG)
 
         // --- 5-hour fields from limits[] entry with duration==300, timeUnit contains "MINUTE" ---
         val fiveHourLimit = findFiveHourLimit(response.limits)
@@ -63,7 +53,6 @@ open class KimiProvider(
 
         val utilization: Double
         val resetsAt: String?
-        var isReset = false
 
         if (fiveHourDetail != null) {
             utilization = parseUtilization(fiveHourDetail.limit, fiveHourDetail.remaining, fiveHourDetail.used)
@@ -81,16 +70,7 @@ open class KimiProvider(
             resetsAt = null
         }
 
-        if (resetsAt != null) {
-            try {
-                val resetTime = OffsetDateTime.parse(resetsAt).toInstant()
-                if (resetTime.isBefore(java.time.Instant.now())) {
-                    isReset = true
-                }
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to parse 5-hour resetTime: $resetsAt", e)
-            }
-        }
+        val (_, isReset) = TimeUtils.computeResetState(resetsAt, TAG)
 
         return UsageInfo(
             utilization = utilization,
@@ -145,53 +125,11 @@ open class KimiProvider(
             .addHeader("Accept", "application/json")
             .build()
 
-        val response = client.newCall(request).execute()
-        val body = response.body?.string() ?: throw ApiException.ParseError("Empty response body")
-        Log.d(TAG, "fetchUsageResponse: HTTP ${response.code}, body=$body")
-
-        if (response.code != 200) {
-            when (response.code) {
-                401 -> throw ApiException.Unauthorized()
-                403 -> throw ApiException.Forbidden()
-                429 -> throw ApiException.RateLimited()
-                else -> throw ApiException.NetworkError("HTTP ${response.code}")
-            }
-        }
-
-        return try {
-            gson.fromJson(body, KimiUsageResponse::class.java)
-        } catch (e: Exception) {
-            throw ApiException.ParseError(e.message ?: "Parse error")
-        }
+        return executeRequest(client, gson, request, TAG,
+            onParseError = { msg -> ApiException.ParseError(msg) },
+            onRateLimited = { body -> Log.w(TAG, "Rate limited. Response body: $body") }
+        )
     }
 
-    private inline fun <reified T> executeRequest(request: Request): T {
-        try {
-            val response = client.newCall(request).execute()
-            val body = response.body?.string() ?: throw ApiException.ParseError("Empty response body")
 
-            when (response.code) {
-                200 -> {
-                    return try {
-                        gson.fromJson(body, T::class.java)
-                    } catch (e: Exception) {
-                        throw ApiException.ParseError(e.message ?: "Parse error")
-                    }
-                }
-                401 -> throw ApiException.Unauthorized()
-                403 -> throw ApiException.Forbidden()
-                429 -> {
-                    Log.w(TAG, "Rate limited. Response body: $body")
-                    throw ApiException.RateLimited()
-                }
-                else -> throw ApiException.NetworkError("HTTP ${response.code}")
-            }
-        } catch (e: ApiException) {
-            Log.e(TAG, "executeRequest: API exception ${e.javaClass.simpleName}: ${e.message}", e)
-            throw e
-        } catch (e: java.io.IOException) {
-            Log.e(TAG, "executeRequest: IOException: ${e.message}", e)
-            throw ApiException.NetworkError(e.message ?: "Unknown network error")
-        }
-    }
 }
