@@ -9,7 +9,8 @@ import com.tokenaddict.app.data.model.UsageResponse
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.time.OffsetDateTime
+import com.tokenaddict.app.data.TimeUtils.isReset
+import com.tokenaddict.app.data.TimeUtils.parseResetTimeStrict
 
 class ClaudeProvider(
     private val client: OkHttpClient,
@@ -52,7 +53,14 @@ class ClaudeProvider(
             .url("$apiBaseUrl/account")
             .addCommonHeaders()
             .build()
-        return executeRequest<AccountResponse>(request)
+        return executeRequest<AccountResponse>(client, gson, request, TAG,
+            onResponse200 = { body ->
+                if (body.looksLikeHtml()) {
+                    throw ApiException.ServiceChanged("Claude returned HTML instead of JSON")
+                }
+            },
+            onParseError = { msg -> ApiException.ServiceChanged("Failed to parse Claude response: $msg") }
+        )
     }
 
     suspend fun validateSession(): AccountInfo {
@@ -76,30 +84,23 @@ class ClaudeProvider(
             .addCommonHeaders()
             .build()
 
-        val usageResponse = executeRequest<UsageResponse>(request)
+        val usageResponse = executeRequest<UsageResponse>(client, gson, request, TAG,
+            onResponse200 = { body ->
+                if (body.looksLikeHtml()) {
+                    throw ApiException.ServiceChanged("Claude returned HTML instead of JSON")
+                }
+            },
+            onParseError = { msg -> ApiException.ServiceChanged("Failed to parse Claude response: $msg") }
+        )
         val utilization = usageResponse.fiveHour?.utilization ?: 0.0
         val resetsAtStr = usageResponse.fiveHour?.resetsAt
 
-        var isReset = false
-        if (resetsAtStr != null) {
-            val resetTime = OffsetDateTime.parse(resetsAtStr).toInstant()
-            if (resetTime.isAfter(java.time.Instant.now())) {
-            } else {
-                isReset = true
-            }
-        }
+        val isReset = resetsAtStr?.parseResetTimeStrict()?.isReset() ?: false
 
         val weeklyUtilization = usageResponse.sevenDay?.utilization ?: 0.0
         val weeklyResetsAtStr = usageResponse.sevenDay?.resetsAt
 
-        var weeklyIsReset = false
-        if (weeklyResetsAtStr != null) {
-            val weeklyResetTime = OffsetDateTime.parse(weeklyResetsAtStr).toInstant()
-            if (weeklyResetTime.isAfter(java.time.Instant.now())) {
-            } else {
-                weeklyIsReset = true
-            }
-        }
+        val weeklyIsReset = weeklyResetsAtStr?.parseResetTimeStrict()?.isReset() ?: false
 
         return UsageInfo(
             utilization = utilization,
@@ -137,33 +138,4 @@ class ClaudeProvider(
         // Delegated to SessionManager
     }
 
-    private inline fun <reified T> executeRequest(request: Request): T {
-        try {
-            val response = client.newCall(request).execute()
-            val body = response.body?.string() ?: throw ApiException.ParseError("Empty response body")
-
-            when (response.code) {
-                200 -> {
-                    if (body.looksLikeHtml()) {
-                        throw ApiException.ServiceChanged("Claude returned HTML instead of JSON")
-                    }
-                    return try {
-                        gson.fromJson(body, T::class.java)
-                    } catch (e: Exception) {
-                        throw ApiException.ServiceChanged("Failed to parse Claude response: ${e.message}")
-                    }
-                }
-                401 -> throw ApiException.Unauthorized()
-                403 -> throw ApiException.Forbidden()
-                429 -> throw ApiException.RateLimited()
-                else -> throw ApiException.NetworkError("HTTP ${response.code}")
-            }
-        } catch (e: ApiException) {
-            Log.e(TAG, "executeRequest: API exception ${e.javaClass.simpleName}: ${e.message}", e)
-            throw e
-        } catch (e: java.io.IOException) {
-            Log.e(TAG, "executeRequest: IOException: ${e.message}", e)
-            throw ApiException.NetworkError(e.message ?: "Unknown network error")
-        }
-    }
 }
