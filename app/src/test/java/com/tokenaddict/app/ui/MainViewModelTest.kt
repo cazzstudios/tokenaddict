@@ -398,6 +398,29 @@ class MainViewModelTest {
     }
 
     @Test
+    fun formatLimitCountdown_onlyFiveHourHit_usesFiveHourReset() {
+        val threeHoursFromNow = System.currentTimeMillis() + 3L * 60 * 60 * 1000
+        val fiveDaysFromNow = System.currentTimeMillis() + 5L * 24 * 60 * 60 * 1000
+        prefs.edit()
+            .putFloat("utilization", 100.0f)
+            .putLong("resets_at", threeHoursFromNow)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 50.0f)
+            .putLong("weekly_resets_at", fiveDaysFromNow)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        callLoadUsageData("claude")
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertTrue("Expected hh:mm:ss (not dd:hh:mm:ss) for 5-hour-only limit, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
+        assertEquals("Countdown should have 3 parts (HH:MM:SS), not 4 (DD:HH:MM:SS)",
+            3, state.limitCountdownText.split(":").size)
+    }
+
+    @Test
     fun formatLimitCountdown_expiredReset_returnsEmpty() {
         val oneHourAgo = System.currentTimeMillis() - 1L * 60 * 60 * 1000
         prefs.edit()

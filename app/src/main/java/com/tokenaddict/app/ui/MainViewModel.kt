@@ -233,7 +233,12 @@ class MainViewModel @JvmOverloads constructor(
         }
         val fiveHourMillis = if (providerId == "claude") claudeResetsAtMillis else kimiResetsAtMillis
         val weeklyMillis = if (providerId == "claude") claudeWeeklyResetsAtMillis else kimiWeeklyResetsAtMillis
-        val effectiveMillis = maxOf(fiveHourMillis, weeklyMillis)
+        val fiveHourReached = state.utilization >= 100.0 && fiveHourMillis > System.currentTimeMillis()
+        val weeklyReached = state.weeklyUtilization >= 100.0 && weeklyMillis > System.currentTimeMillis()
+        val effectiveMillis = maxOf(
+            if (fiveHourReached) fiveHourMillis else Long.MIN_VALUE,
+            if (weeklyReached) weeklyMillis else Long.MIN_VALUE
+        )
         val countdownText = formatLimitCountdown(effectiveMillis)
         liveData.value = state.copy(limitCountdownText = countdownText)
     }
@@ -294,10 +299,15 @@ class MainViewModel @JvmOverloads constructor(
             kimiWeeklyResetsAtMillis = weeklyResetsAtMillis
         }
 
-        val hasReachedLimit = utilization >= 100.0 || weeklyUtilization >= 100.0
+        val fiveHourReached = utilization >= 100.0 && resetsAtMillis > System.currentTimeMillis()
+        val weeklyReached = weeklyUtilization >= 100.0 && weeklyResetsAtMillis > System.currentTimeMillis()
+        val hasReachedLimit = fiveHourReached || weeklyReached
 
         val limitCountdownText = if (hasReachedLimit) {
-            val effectiveMillis = maxOf(resetsAtMillis, weeklyResetsAtMillis)
+            val effectiveMillis = maxOf(
+                if (fiveHourReached) resetsAtMillis else Long.MIN_VALUE,
+                if (weeklyReached) weeklyResetsAtMillis else Long.MIN_VALUE
+            )
             formatLimitCountdown(effectiveMillis)
         } else {
             stopCountdownTimer(providerId)
