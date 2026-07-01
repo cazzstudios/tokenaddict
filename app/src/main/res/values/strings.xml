@@ -14,9 +14,6 @@
     <string name="notification_reset_message_kimi">Kimi usage limit has been reset. Tap to check.</string>
     <string name="session_expired_title">Session Expired</string>
     <string name="session_expired_message">Your session has expired — tap to re-login.</string>
-    <string name="reset_ready_title">Ready to Use</string>
-    <string name="reset_ready_message">Your usage limit has been reset. Tap to check.</string>
-
     <string-array name="notification_reset_messages">
         <item>[agent] had an excellent nap! Ready to go back to work.</item>
         <item>[agent]\'s break is over, and yours is too. Go back to work!</item>
@@ -48,7 +45,6 @@
     <string name="log_in">Log In</string>
     <string name="refresh_now">Refresh Now</string>
     <string name="logout">Logout</string>
-    <string name="resets_at">Resets at: %s</string>
     <string name="last_checked">Last checked: %s</string>
     <string name="resets_in">resets in %s</string>
     <string name="countdown_days">Days</string>
@@ -57,8 +53,6 @@
     <string name="countdown_seconds">Seconds</string>
     <string name="countdown_separator">:</string>
 
-    <!-- Main Activity -->
-    <string name="claude_service_changed_title">Claude integration issue</string>
     <string name="claude_service_changed_message">Claude.ai may have changed. Usage data may be unavailable until the app is updated.</string>
 
     <!-- Notification Permission Dialog -->
@@ -100,11 +94,8 @@
     <string name="about_summary">Token Addict v1.0</string>
 
     <!-- Content Descriptions -->
-    <string name="cd_utilization_progress">Usage utilization progress</string>
     <string name="cd_loading">Loading indicator</string>
     <string name="cd_working_robot">Working robot icon</string>
-    <string name="cd_resting_robot">Resting robot icon</string>
-    <string name="cd_limit_countdown">Time until usage limit resets</string>
     <string name="cd_countdown_days">Days remaining</string>
     <string name="cd_countdown_hours">Hours remaining</string>
     <string name="cd_countdown_minutes">Minutes remaining</string>
@@ -120,13 +111,6 @@
 
     <!-- Kimi Login Activity -->
     <string name="kimi_login_title">Log in to Kimi Code</string>
-    <string name="kimi_requesting_code">Requesting device code…</string>
-    <string name="kimi_open_browser">Open Browser</string>
-    <string name="kimi_code_copied">Code copied to clipboard</string>
-    <string name="kimi_code_expired">Code expired. Tap to try again.</string>
-    <string name="kimi_access_denied">Authorization denied.</string>
-    <string name="kimi_request_failed">Failed: %s</string>
-    <string name="kimi_poll_error">Poll error: %s</string>
     <string name="kimi_retry">Try Again</string>
     <string name="kimi_webview_helper">If the submit button is not visible, press Enter on the keyboard.</string>
 </resources>

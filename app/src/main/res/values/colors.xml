@@ -28,9 +28,6 @@
     <color name="md_theme_surfaceVariant">#E7E0EC</color>
     <color name="md_theme_onSurfaceVariant">#49454F</color>
 
-    <!-- App Icon Background -->
-    <color name="ic_launcher_background">#6750A4</color>
-
     <!-- Kimi Branding -->
     <color name="kimi_orange">#FF6B35</color>
 
