@@ -11,12 +11,13 @@ import com.tokenaddict.app.data.KimiTokenManager
 import com.tokenaddict.app.data.NotificationScheduler
 import com.tokenaddict.app.data.SecurePreferences
 import com.tokenaddict.app.data.HttpConfig
+import com.tokenaddict.app.data.TimeUtils
+import com.tokenaddict.app.data.WorkerUtils
 import com.tokenaddict.app.data.model.ApiException
+import com.tokenaddict.app.data.writeUsagePrefs
 import com.google.gson.Gson
 import okhttp3.OkHttpClient
-import java.time.Instant
 import java.util.concurrent.TimeUnit
-import java.time.OffsetDateTime
 
 class KimiUsageWorker(
     context: Context,
@@ -90,66 +91,16 @@ class KimiUsageWorker(
 
             val usageInfo = getKimiProvider().getUsage()
 
-            val utilization = usageInfo.utilization
-            val resetTimeStr = usageInfo.resetsAt
-            val isReset = usageInfo.isReset
+            val blockingState = WorkerUtils.computeBlockingState(usageInfo)
+            WorkerUtils.scheduleOrCancelNotification(blockingState, getNotificationScheduler())
 
-            val weeklyUtilization = usageInfo.weeklyUtilization
-            val weeklyResetsAtStr = usageInfo.weeklyResetsAt
-            val weeklyIsReset = usageInfo.weeklyIsReset
-
-            val now = Instant.now()
-
-            var resetTimeMillis = 0L
-            val fiveHourResetInstant = resetTimeStr?.let {
-                try {
-                    OffsetDateTime.parse(it).toInstant().also { instant ->
-                        resetTimeMillis = instant.toEpochMilli()
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Failed to parse reset time: $it", e)
-                    null
-                }
-            }
-
-            var weeklyResetTimeMillis = 0L
-            val weeklyResetInstant = weeklyResetsAtStr?.let {
-                try {
-                    OffsetDateTime.parse(it).toInstant().also { instant ->
-                        weeklyResetTimeMillis = instant.toEpochMilli()
-                    }
-                } catch (e: Exception) {
-                    Log.w(TAG, "Failed to parse weekly reset time: $weeklyResetsAtStr", e)
-                    null
-                }
-            }
-
-            val isFiveHourLimitReached = utilization >= 100.0
-            val isWeeklyLimitReached = weeklyUtilization >= 100.0
-
-            val fiveHourBlocking = isFiveHourLimitReached && fiveHourResetInstant?.isAfter(now) == true
-            val weeklyBlocking = isWeeklyLimitReached && weeklyResetInstant?.isAfter(now) == true
-
-            if (fiveHourBlocking || weeklyBlocking) {
-                val effectiveResetMillis = maxOf(
-                    if (fiveHourBlocking) fiveHourResetInstant!!.toEpochMilli() else Long.MIN_VALUE,
-                    if (weeklyBlocking) weeklyResetInstant!!.toEpochMilli() else Long.MIN_VALUE
-                )
-                getNotificationScheduler().scheduleResetNotification(effectiveResetMillis)
-            } else {
-                getNotificationScheduler().cancelResetNotification()
-            }
+            val (resetTimeMillis, _) = TimeUtils.computeResetState(usageInfo.resetsAt, TAG)
+            val (weeklyResetTimeMillis, _) = TimeUtils.computeResetState(usageInfo.weeklyResetsAt, TAG)
 
             try {
                 val prefs: SharedPreferences = applicationContext.getSharedPreferences("usage_prefs_kimi", Context.MODE_PRIVATE)
                 prefs.edit()
-                    .putFloat("utilization", utilization.toFloat())
-                    .putLong("resets_at", resetTimeMillis)
-                    .putBoolean("is_reset", isReset)
-                    .putFloat("weekly_utilization", weeklyUtilization.toFloat())
-                    .putLong("weekly_resets_at", weeklyResetTimeMillis)
-                    .putBoolean("weekly_is_reset", weeklyIsReset)
-                    .putLong("last_checked", System.currentTimeMillis())
+                    .writeUsagePrefs(usageInfo, resetTimeMillis, weeklyResetTimeMillis)
                     .apply()
             } catch (e: Exception) { Log.e(TAG, "Failed to write kimi usage prefs", e) }
 

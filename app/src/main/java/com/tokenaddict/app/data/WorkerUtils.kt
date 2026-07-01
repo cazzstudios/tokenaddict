@@ -47,20 +47,20 @@ object WorkerUtils {
             notificationScheduler.cancelResetNotification()
         }
     }
+}
 
-    /** Write usage data to SharedPreferences. */
-    fun SharedPreferences.Editor.writeUsagePrefs(
-        usageInfo: UsageInfo,
-        resetTimeMillis: Long,
-        weeklyResetTimeMillis: Long
-    ): SharedPreferences.Editor {
-        return this
-            .putFloat("utilization", usageInfo.utilization.toFloat())
-            .putLong("resets_at", resetTimeMillis)
-            .putBoolean("is_reset", usageInfo.isReset)
-            .putFloat("weekly_utilization", usageInfo.weeklyUtilization.toFloat())
-            .putLong("weekly_resets_at", weeklyResetTimeMillis)
-            .putBoolean("weekly_is_reset", usageInfo.weeklyIsReset)
-            .putLong("last_checked", System.currentTimeMillis())
-    }
+/** Write usage data to SharedPreferences. */
+fun SharedPreferences.Editor.writeUsagePrefs(
+    usageInfo: UsageInfo,
+    resetTimeMillis: Long,
+    weeklyResetTimeMillis: Long
+): SharedPreferences.Editor {
+    return this
+        .putFloat("utilization", usageInfo.utilization.toFloat())
+        .putLong("resets_at", resetTimeMillis)
+        .putBoolean("is_reset", usageInfo.isReset)
+        .putFloat("weekly_utilization", usageInfo.weeklyUtilization.toFloat())
+        .putLong("weekly_resets_at", weeklyResetTimeMillis)
+        .putBoolean("weekly_is_reset", usageInfo.weeklyIsReset)
+        .putLong("last_checked", System.currentTimeMillis())
 }
