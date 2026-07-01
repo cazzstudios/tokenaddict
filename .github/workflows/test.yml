@@ -31,5 +31,5 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gradle-
 
-      - name: Run tests
-        run: ./gradlew test --no-daemon -Dorg.gradle.java.home=$JAVA_HOME
+      - name: Run lint, assembleRelease, and tests
+        run: ./gradlew lint assembleRelease test --no-daemon -Dorg.gradle.java.home=$JAVA_HOME

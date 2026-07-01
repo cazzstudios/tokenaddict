@@ -1,8 +1,8 @@
-import java.util.Properties
-
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("io.gitlab.arturbosch.detekt")
+    id("org.jlleitschuh.gradle.ktlint")
 }
 
 android {
@@ -27,9 +27,9 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            getDefaultProguardFile("proguard-android-optimize.txt"),
+            "proguard-rules.pro",
+        )
         }
     }
 
@@ -48,6 +48,10 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+}
+
+ktlint {
+    ignoreFailures.set(true)
 }
 
 dependencies {

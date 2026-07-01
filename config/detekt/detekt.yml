@@ -1,0 +1,15 @@
+build:
+  maxIssues: 100
+complexity:
+  active: true
+style:
+  active: true
+  MaxLineLength:
+    active: true
+    maxLineLength: 120
+exceptions:
+  active: true
+potential-bugs:
+  active: true
+naming:
+  active: true
