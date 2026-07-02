@@ -52,7 +52,8 @@ class MainViewModel @JvmOverloads constructor(
             val weeklyIsReset: Boolean = false,
             val hasReachedLimit: Boolean = false,
             val serviceChanged: Boolean = false,
-            val limitCountdownText: String = ""
+            val limitCountdownText: String = "",
+            val countdownHasDays: Boolean = false
         ) : UiState()
     }
 
@@ -205,10 +206,16 @@ class MainViewModel @JvmOverloads constructor(
         val minutes = (remaining / (1000 * 60)) % 60
         val seconds = (remaining / 1000) % 60
         return if (days > 0) {
-            String.format(Locale.ROOT, "%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
+            String.format(Locale.ROOT, "%02d:%02d:%02d", days, hours, minutes)
         } else {
             String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, seconds)
         }
+    }
+
+    private fun hasDaysInLimitCountdown(resetsAtMillis: Long): Boolean {
+        if (resetsAtMillis <= 0) return false
+        val remaining = resetsAtMillis - System.currentTimeMillis()
+        return remaining > 1000 * 60 * 60 * 24
     }
 
     private fun startCountdownTimer(providerId: String) {
@@ -241,7 +248,8 @@ class MainViewModel @JvmOverloads constructor(
             if (weeklyReached) weeklyMillis else Long.MIN_VALUE
         )
         val countdownText = formatLimitCountdown(effectiveMillis)
-        liveData.value = state.copy(limitCountdownText = countdownText)
+        val countdownHasDays = hasDaysInLimitCountdown(effectiveMillis)
+        liveData.value = state.copy(limitCountdownText = countdownText, countdownHasDays = countdownHasDays)
     }
 
     private fun stopCountdownTimer(providerId: String) {
@@ -304,13 +312,16 @@ class MainViewModel @JvmOverloads constructor(
         val weeklyReached = weeklyUtilization >= 100.0 && weeklyResetsAtMillis > System.currentTimeMillis()
         val hasReachedLimit = fiveHourReached || weeklyReached
 
+        val countdownHasDays: Boolean
         val limitCountdownText = if (hasReachedLimit) {
             val effectiveMillis = maxOf(
                 if (fiveHourReached) resetsAtMillis else Long.MIN_VALUE,
                 if (weeklyReached) weeklyResetsAtMillis else Long.MIN_VALUE
             )
+            countdownHasDays = hasDaysInLimitCountdown(effectiveMillis)
             formatLimitCountdown(effectiveMillis)
         } else {
+            countdownHasDays = false
             stopCountdownTimer(providerId)
             ""
         }
@@ -358,7 +369,8 @@ class MainViewModel @JvmOverloads constructor(
             weeklyIsReset = weeklyIsReset,
             hasReachedLimit = hasReachedLimit,
             serviceChanged = serviceChanged,
-            limitCountdownText = limitCountdownText
+            limitCountdownText = limitCountdownText,
+            countdownHasDays = countdownHasDays
         )
     }
 

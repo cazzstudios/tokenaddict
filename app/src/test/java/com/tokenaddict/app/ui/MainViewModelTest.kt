@@ -277,7 +277,7 @@ class MainViewModelTest {
     }
 
     @Test
-    fun formatLimitCountdown_withDays_returnsDdHhMmSsFormat() {
+    fun formatLimitCountdown_withDays_returnsDdHhMmFormat() {
         val threeDaysFromNow = System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000
         prefs.edit()
             .putFloat("utilization", 100.0f)
@@ -292,12 +292,15 @@ class MainViewModelTest {
         callLoadUsageData("claude")
 
         val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
-        assertTrue("Expected dd:hh:mm:ss format, got: ${state.limitCountdownText}",
-            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}:\\d{2}")))
+        assertTrue("Expected dd:hh:mm format, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
+        assertEquals("Countdown should have 3 parts (DD:HH:MM), not 4",
+            3, state.limitCountdownText.split(":").size)
+        assertTrue("countdownHasDays should be true when days > 0", state.countdownHasDays)
     }
 
     @Test
-    fun formatLimitCountdown_withDays_returnsHhMmSsSsFormat() {
+    fun formatLimitCountdown_withDays_returnsHhMmFormat() {
         val threeDaysFromNow = System.currentTimeMillis() + 3L * 24 * 60 * 60 * 1000
         prefs.edit()
             .putFloat("utilization", 100.0f)
@@ -312,8 +315,8 @@ class MainViewModelTest {
         callLoadUsageData("claude")
 
         val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
-        assertTrue("Expected hh:mm:ss:ss format (dd:hh:mm:ss), got: ${state.limitCountdownText}",
-            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}:\\d{2}")))
+        assertTrue("Expected dd:hh:mm format (DD:HH:MM), got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
     }
 
     @Test
@@ -393,8 +396,8 @@ class MainViewModelTest {
         callLoadUsageData("claude")
 
         val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
-        assertTrue("Expected dd:hh:mm:ss format using later reset, got: ${state.limitCountdownText}",
-            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}:\\d{2}")))
+        assertTrue("Expected dd:hh:mm format using later reset, got: ${state.limitCountdownText}",
+            state.limitCountdownText.matches(Regex("\\d{2}:\\d{2}:\\d{2}")))
     }
 
     @Test
