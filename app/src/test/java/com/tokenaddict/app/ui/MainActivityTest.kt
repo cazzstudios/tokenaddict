@@ -132,10 +132,10 @@ class MainActivityTest {
         val usageDetails = activity.findViewById<View>(R.id.claudeUsageDetails)
         assertEquals(View.VISIBLE, usageDetails.visibility)
 
-        val shortContainer = activity.findViewById<View>(R.id.claudeCountdownShortContainer)
+        val shortContainer = activity.findViewById<View>(R.id.claude_countdown_short)
         assertEquals(View.GONE, shortContainer.visibility)
 
-        val longContainer = activity.findViewById<View>(R.id.claudeCountdownLongContainer)
+        val longContainer = activity.findViewById<View>(R.id.claude_countdown_long)
         assertEquals(View.GONE, longContainer.visibility)
     }
 
@@ -144,7 +144,7 @@ class MainActivityTest {
         val activity = launchActivity()
         setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "00:05:00")
 
-        val shortContainer = activity.findViewById<View>(R.id.claudeCountdownShortContainer)
+        val shortContainer = activity.findViewById<View>(R.id.claude_countdown_short)
         assertEquals(View.VISIBLE, shortContainer.visibility)
     }
 
@@ -153,7 +153,7 @@ class MainActivityTest {
         val activity = launchActivity()
         setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "01:02:02:00")
 
-        val longContainer = activity.findViewById<View>(R.id.claudeCountdownLongContainer)
+        val longContainer = activity.findViewById<View>(R.id.claude_countdown_long)
         assertEquals(View.VISIBLE, longContainer.visibility)
     }
 
@@ -174,18 +174,18 @@ class MainActivityTest {
         val activity = controller.get()
         setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "00:05:00")
 
-        val shortContainerBefore = activity.findViewById<View>(R.id.claudeCountdownShortContainer)
+        val shortContainerBefore = activity.findViewById<View>(R.id.claude_countdown_short)
         assertEquals(View.VISIBLE, shortContainerBefore.visibility)
-        val longContainerBefore = activity.findViewById<View>(R.id.claudeCountdownLongContainer)
+        val longContainerBefore = activity.findViewById<View>(R.id.claude_countdown_long)
         assertEquals(View.GONE, longContainerBefore.visibility)
 
         controller.recreate()
         val recreated = controller.get()
         ShadowLooper.idleMainLooper()
 
-        val shortContainerAfter = recreated.findViewById<View>(R.id.claudeCountdownShortContainer)
+        val shortContainerAfter = recreated.findViewById<View>(R.id.claude_countdown_short)
         assertEquals(View.VISIBLE, shortContainerAfter.visibility)
-        val longContainerAfter = recreated.findViewById<View>(R.id.claudeCountdownLongContainer)
+        val longContainerAfter = recreated.findViewById<View>(R.id.claude_countdown_long)
         assertEquals(View.GONE, longContainerAfter.visibility)
         val usageContainerAfter = recreated.findViewById<View>(R.id.claudeUsageContainer)
         assertEquals(View.VISIBLE, usageContainerAfter.visibility)
@@ -198,16 +198,16 @@ class MainActivityTest {
         val activity = controller.get()
         setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "01:02:02:00")
 
-        val longContainerBefore = activity.findViewById<View>(R.id.claudeCountdownLongContainer)
+        val longContainerBefore = activity.findViewById<View>(R.id.claude_countdown_long)
         assertEquals(View.VISIBLE, longContainerBefore.visibility)
 
         controller.recreate()
         val recreated = controller.get()
         ShadowLooper.idleMainLooper()
 
-        val longContainerAfter = recreated.findViewById<View>(R.id.claudeCountdownLongContainer)
+        val longContainerAfter = recreated.findViewById<View>(R.id.claude_countdown_long)
         assertEquals(View.VISIBLE, longContainerAfter.visibility)
-        val shortContainerAfter = recreated.findViewById<View>(R.id.claudeCountdownShortContainer)
+        val shortContainerAfter = recreated.findViewById<View>(R.id.claude_countdown_short)
         assertEquals(View.GONE, shortContainerAfter.visibility)
     }
 
@@ -227,9 +227,9 @@ class MainActivityTest {
 
         val usageDetailsAfter = recreated.findViewById<View>(R.id.claudeUsageDetails)
         assertEquals(View.VISIBLE, usageDetailsAfter.visibility)
-        val shortContainerAfter = recreated.findViewById<View>(R.id.claudeCountdownShortContainer)
+        val shortContainerAfter = recreated.findViewById<View>(R.id.claude_countdown_short)
         assertEquals(View.GONE, shortContainerAfter.visibility)
-        val longContainerAfter = recreated.findViewById<View>(R.id.claudeCountdownLongContainer)
+        val longContainerAfter = recreated.findViewById<View>(R.id.claude_countdown_long)
         assertEquals(View.GONE, longContainerAfter.visibility)
     }
 

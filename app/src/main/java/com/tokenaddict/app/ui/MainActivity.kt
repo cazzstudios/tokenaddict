@@ -280,26 +280,36 @@ class MainActivity : AppCompatActivity() {
         claudeRobotIcon = findViewById(R.id.claudeRobotIcon)
         claudeUsageDetails = findViewById(R.id.claudeUsageDetails)
 
-        claudeCountdownShortContainer = findViewById(R.id.claudeCountdownShortContainer)
-        claudeCountdownLongContainer = findViewById(R.id.claudeCountdownLongContainer)
-        claudeShortHours = findViewById(R.id.claudeShortHours)
-        claudeShortMinutes = findViewById(R.id.claudeShortMinutes)
-        claudeShortSeconds = findViewById(R.id.claudeShortSeconds)
-        claudeLongDays = findViewById(R.id.claudeLongDays)
-        claudeLongHours = findViewById(R.id.claudeLongHours)
-        claudeLongMinutes = findViewById(R.id.claudeLongMinutes)
+        // Claude short countdown (include root)
+        val claudeShortInclude = findViewById<LinearLayout>(R.id.claude_countdown_short)
+        claudeCountdownShortContainer = claudeShortInclude
+        claudeShortHours = claudeShortInclude.findViewById(R.id.hours_digit)
+        claudeShortMinutes = claudeShortInclude.findViewById(R.id.minutes_digit)
+        claudeShortSeconds = claudeShortInclude.findViewById(R.id.seconds_digit)
+
+        // Claude long countdown (include root)
+        val claudeLongInclude = findViewById<LinearLayout>(R.id.claude_countdown_long)
+        claudeCountdownLongContainer = claudeLongInclude
+        claudeLongDays = claudeLongInclude.findViewById(R.id.days_digit)
+        claudeLongHours = claudeLongInclude.findViewById(R.id.hours_digit)
+        claudeLongMinutes = claudeLongInclude.findViewById(R.id.minutes_digit)
 
         kimiRobotIcon = findViewById(R.id.kimiRobotIcon)
         kimiUsageDetails = findViewById(R.id.kimiUsageDetails)
 
-        kimiCountdownShortContainer = findViewById(R.id.kimiCountdownShortContainer)
-        kimiCountdownLongContainer = findViewById(R.id.kimiCountdownLongContainer)
-        kimiShortHours = findViewById(R.id.kimiShortHours)
-        kimiShortMinutes = findViewById(R.id.kimiShortMinutes)
-        kimiShortSeconds = findViewById(R.id.kimiShortSeconds)
-        kimiLongDays = findViewById(R.id.kimiLongDays)
-        kimiLongHours = findViewById(R.id.kimiLongHours)
-        kimiLongMinutes = findViewById(R.id.kimiLongMinutes)
+        // Kimi short countdown (include root)
+        val kimiShortInclude = findViewById<LinearLayout>(R.id.kimi_countdown_short)
+        kimiCountdownShortContainer = kimiShortInclude
+        kimiShortHours = kimiShortInclude.findViewById(R.id.hours_digit)
+        kimiShortMinutes = kimiShortInclude.findViewById(R.id.minutes_digit)
+        kimiShortSeconds = kimiShortInclude.findViewById(R.id.seconds_digit)
+
+        // Kimi long countdown (include root)
+        val kimiLongInclude = findViewById<LinearLayout>(R.id.kimi_countdown_long)
+        kimiCountdownLongContainer = kimiLongInclude
+        kimiLongDays = kimiLongInclude.findViewById(R.id.days_digit)
+        kimiLongHours = kimiLongInclude.findViewById(R.id.hours_digit)
+        kimiLongMinutes = kimiLongInclude.findViewById(R.id.minutes_digit)
     }
 
     private fun setupListeners() {
