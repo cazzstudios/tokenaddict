@@ -106,8 +106,9 @@
             android:textColor="?attr/colorOnSurfaceVariant" />
     </LinearLayout>
 
-    <!-- Colon separator -->
+    <!-- Colon separator (before seconds) -->
     <TextView
+        android:id="@+id/seconds_colon"
         android:layout_width="24dp"
         android:layout_height="wrap_content"
         android:gravity="center"
