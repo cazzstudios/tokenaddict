@@ -2,6 +2,10 @@
 
 Monitors AI usage limits for Claude.ai and Kimi Code. Displays real-time utilization, reset countdowns, and sends notifications when limits are approaching or have been reached.
 
+<p align="center">
+  <img src="token_addict_screenshot.png" alt="Token Addict screenshot" width="300">
+</p>
+
 ## Prerequisites
 
 - JDK 21
