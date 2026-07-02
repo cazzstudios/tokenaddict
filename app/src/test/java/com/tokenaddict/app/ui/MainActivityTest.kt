@@ -124,6 +124,31 @@ class MainActivityTest {
         ShadowLooper.shadowMainLooper().idleFor(java.time.Duration.ofMillis(1000))
     }
 
+    private fun setKimiState(
+        activity: MainActivity,
+        hasReachedLimit: Boolean,
+        limitCountdownText: String = ""
+    ) {
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        val field = viewModel.javaClass.getDeclaredField("_kimiState")
+        field.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        val liveData = field.get(viewModel) as MutableLiveData<MainViewModel.UiState>
+        liveData.postValue(
+            MainViewModel.UiState.UsageData(
+                utilization = 100.0,
+                resetsAt = "N/A",
+                timeRemaining = "",
+                isReset = false,
+                lastChecked = "Jan 01, 00:00",
+                hasReachedLimit = hasReachedLimit,
+                limitCountdownText = limitCountdownText
+            )
+        )
+        ShadowLooper.idleMainLooper()
+        ShadowLooper.shadowMainLooper().idleFor(java.time.Duration.ofMillis(1000))
+    }
+
     @Test
     fun notLimited_showsUsageDetails() {
         val activity = launchActivity()
@@ -151,7 +176,26 @@ class MainActivityTest {
     @Test
     fun longCountdown_showsLongContainer() {
         val activity = launchActivity()
-        setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "01:02:02:00")
+        // 3-part DD:HH:MM format with countdownHasDays=true
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        val field = viewModel.javaClass.getDeclaredField("_claudeState")
+        field.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        val liveData = field.get(viewModel) as MutableLiveData<MainViewModel.UiState>
+        liveData.postValue(
+            MainViewModel.UiState.UsageData(
+                utilization = 100.0,
+                resetsAt = "N/A",
+                timeRemaining = "",
+                isReset = false,
+                lastChecked = "Jan 01, 00:00",
+                hasReachedLimit = true,
+                limitCountdownText = "01:02:02",
+                countdownHasDays = true
+            )
+        )
+        ShadowLooper.idleMainLooper()
+        ShadowLooper.shadowMainLooper().idleFor(java.time.Duration.ofMillis(1000))
 
         val longContainer = activity.findViewById<View>(R.id.claude_countdown_long)
         assertEquals(View.VISIBLE, longContainer.visibility)
@@ -196,7 +240,25 @@ class MainActivityTest {
         val controller = Robolectric.buildActivity(MainActivity::class.java)
             .create().start().resume()
         val activity = controller.get()
-        setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "01:02:02:00")
+        val viewModel = ViewModelProvider(activity)[MainViewModel::class.java]
+        val field = viewModel.javaClass.getDeclaredField("_claudeState")
+        field.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        val liveData = field.get(viewModel) as MutableLiveData<MainViewModel.UiState>
+        liveData.postValue(
+            MainViewModel.UiState.UsageData(
+                utilization = 100.0,
+                resetsAt = "N/A",
+                timeRemaining = "",
+                isReset = false,
+                lastChecked = "Jan 01, 00:00",
+                hasReachedLimit = true,
+                limitCountdownText = "01:02:02",
+                countdownHasDays = true
+            )
+        )
+        ShadowLooper.idleMainLooper()
+        ShadowLooper.shadowMainLooper().idleFor(java.time.Duration.ofMillis(1000))
 
         val longContainerBefore = activity.findViewById<View>(R.id.claude_countdown_long)
         assertEquals(View.VISIBLE, longContainerBefore.visibility)
@@ -209,6 +271,32 @@ class MainActivityTest {
         assertEquals(View.VISIBLE, longContainerAfter.visibility)
         val shortContainerAfter = recreated.findViewById<View>(R.id.claude_countdown_short)
         assertEquals(View.GONE, shortContainerAfter.visibility)
+    }
+
+    @Test
+    fun claudeShortCountdown_showsSecondsDigit() {
+        val activity = launchActivity()
+        setClaudeState(activity, hasReachedLimit = true, limitCountdownText = "00:05:30")
+
+        val shortContainer = activity.findViewById<View>(R.id.claude_countdown_short)
+        assertEquals(View.VISIBLE, shortContainer.visibility)
+
+        val include = activity.findViewById<View>(R.id.claude_countdown_short)
+        val secondsDigit = include.findViewById<CountdownDigitView>(R.id.seconds_digit)
+        assertEquals("30", secondsDigit.text.toString())
+    }
+
+    @Test
+    fun kimiShortCountdown_showsSecondsDigit() {
+        val activity = launchActivity()
+        setKimiState(activity, hasReachedLimit = true, limitCountdownText = "00:05:30")
+
+        val shortContainer = activity.findViewById<View>(R.id.kimi_countdown_short)
+        assertEquals(View.VISIBLE, shortContainer.visibility)
+
+        val include = activity.findViewById<View>(R.id.kimi_countdown_short)
+        val secondsDigit = include.findViewById<CountdownDigitView>(R.id.seconds_digit)
+        assertEquals("30", secondsDigit.text.toString())
     }
 
     @Test

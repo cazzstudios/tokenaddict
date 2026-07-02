@@ -73,10 +73,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var claudeShortMinutes: CountdownDigitView
     private lateinit var claudeShortSeconds: CountdownDigitView
 
-    // Claude long digits (DD:HH:MM)
+    // Claude long digits (DD:HH:MM:SS)
     private lateinit var claudeLongDays: CountdownDigitView
     private lateinit var claudeLongHours: CountdownDigitView
     private lateinit var claudeLongMinutes: CountdownDigitView
+    private lateinit var claudeLongSeconds: CountdownDigitView
 
     // Kimi countdown containers
     private lateinit var kimiCountdownShortContainer: LinearLayout
@@ -87,10 +88,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var kimiShortMinutes: CountdownDigitView
     private lateinit var kimiShortSeconds: CountdownDigitView
 
-    // Kimi long digits (DD:HH:MM)
+    // Kimi long digits (DD:HH:MM:SS)
     private lateinit var kimiLongDays: CountdownDigitView
     private lateinit var kimiLongHours: CountdownDigitView
     private lateinit var kimiLongMinutes: CountdownDigitView
+    private lateinit var kimiLongSeconds: CountdownDigitView
 
     private val claudeLoginLauncher = registerForActivityResult(LoginResultContract()) { success ->
         if (success) {
@@ -293,6 +295,7 @@ class MainActivity : AppCompatActivity() {
         claudeLongDays = claudeLongInclude.findViewById(R.id.days_digit)
         claudeLongHours = claudeLongInclude.findViewById(R.id.hours_digit)
         claudeLongMinutes = claudeLongInclude.findViewById(R.id.minutes_digit)
+        claudeLongSeconds = claudeLongInclude.findViewById(R.id.seconds_digit)
 
         kimiRobotIcon = findViewById(R.id.kimiRobotIcon)
         kimiUsageDetails = findViewById(R.id.kimiUsageDetails)
@@ -310,6 +313,7 @@ class MainActivity : AppCompatActivity() {
         kimiLongDays = kimiLongInclude.findViewById(R.id.days_digit)
         kimiLongHours = kimiLongInclude.findViewById(R.id.hours_digit)
         kimiLongMinutes = kimiLongInclude.findViewById(R.id.minutes_digit)
+        kimiLongSeconds = kimiLongInclude.findViewById(R.id.seconds_digit)
     }
 
     private fun setupListeners() {
@@ -401,8 +405,10 @@ class MainActivity : AppCompatActivity() {
             longDays = claudeLongDays,
             longHours = claudeLongHours,
             longMinutes = claudeLongMinutes,
+            longSeconds = claudeLongSeconds,
             hasReachedLimit = data.hasReachedLimit,
-            countdownText = data.limitCountdownText
+            countdownText = data.limitCountdownText,
+            hasDays = data.countdownHasDays
         )
 
         claudeLastCheckedText.text = getString(R.string.last_checked, data.lastChecked)
@@ -454,8 +460,10 @@ class MainActivity : AppCompatActivity() {
             longDays = kimiLongDays,
             longHours = kimiLongHours,
             longMinutes = kimiLongMinutes,
+            longSeconds = kimiLongSeconds,
             hasReachedLimit = data.hasReachedLimit,
-            countdownText = data.limitCountdownText
+            countdownText = data.limitCountdownText,
+            hasDays = data.countdownHasDays
         )
 
         kimiLastCheckedText.text = getString(R.string.last_checked, data.lastChecked)
@@ -472,8 +480,10 @@ class MainActivity : AppCompatActivity() {
         longDays: CountdownDigitView,
         longHours: CountdownDigitView,
         longMinutes: CountdownDigitView,
+        longSeconds: CountdownDigitView,
         hasReachedLimit: Boolean,
-        countdownText: String
+        countdownText: String,
+        hasDays: Boolean
     ) {
         if (!hasReachedLimit) {
             robotIcon.setImageResource(R.drawable.working)
@@ -487,12 +497,16 @@ class MainActivity : AppCompatActivity() {
         robotIcon.setImageResource(R.drawable.resting)
 
         val parts = countdownText.split(":")
-        val useLongFormat = parts.size == 4
 
-        if (useLongFormat) {
+        if (hasDays) {
+            // DD:HH:MM format — use long container, hide seconds
             longDays.setDigitValue(parts[0].toIntOrNull() ?: 0, animate = false)
             longHours.setDigitValue(parts[1].toIntOrNull() ?: 0, animate = false)
             longMinutes.setDigitValue(parts[2].toIntOrNull() ?: 0, animate = false)
+            countdownLongContainer.findViewById<View>(R.id.days_column).visibility = View.VISIBLE
+            countdownLongContainer.findViewById<View>(R.id.days_colon).visibility = View.VISIBLE
+            countdownLongContainer.findViewById<View>(R.id.seconds_column).visibility = View.GONE
+            countdownLongContainer.findViewById<View>(R.id.seconds_colon).visibility = View.GONE
             if (countdownLongContainer.visibility != View.VISIBLE) {
                 countdownShortContainer.visibility = View.GONE
                 crossfade(usageDetails, countdownLongContainer)
@@ -501,6 +515,7 @@ class MainActivity : AppCompatActivity() {
                 countdownShortContainer.visibility = View.GONE
             }
         } else {
+            // HH:MM:SS format — use short container
             shortHours.setDigitValue(parts[0].toIntOrNull() ?: 0, animate = false)
             shortMinutes.setDigitValue(parts[1].toIntOrNull() ?: 0, animate = false)
             shortSeconds.setDigitValue(parts[2].toIntOrNull() ?: 0, animate = false)
@@ -560,12 +575,14 @@ class MainActivity : AppCompatActivity() {
         claudeLongDays.animate().cancel()
         claudeLongHours.animate().cancel()
         claudeLongMinutes.animate().cancel()
+        claudeLongSeconds.animate().cancel()
         kimiShortHours.animate().cancel()
         kimiShortMinutes.animate().cancel()
         kimiShortSeconds.animate().cancel()
         kimiLongDays.animate().cancel()
         kimiLongHours.animate().cancel()
         kimiLongMinutes.animate().cancel()
+        kimiLongSeconds.animate().cancel()
         claudeUsageDetails.animate().cancel()
         kimiUsageDetails.animate().cancel()
         claudeCountdownShortContainer.animate().cancel()
