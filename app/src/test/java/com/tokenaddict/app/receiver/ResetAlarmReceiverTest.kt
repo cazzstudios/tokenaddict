@@ -126,7 +126,9 @@ class ResetAlarmReceiverTest {
         val now = System.currentTimeMillis()
         context.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE)
             .edit()
+            .putFloat("utilization", 0f)
             .putLong("resets_at", now - 1000)
+            .putFloat("weekly_utilization", 100f)
             .putLong("weekly_resets_at", now + 3600_000)
             .apply()
 
@@ -141,7 +143,9 @@ class ResetAlarmReceiverTest {
         val now = System.currentTimeMillis()
         context.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE)
             .edit()
+            .putFloat("utilization", 100f)
             .putLong("resets_at", now + 3600_000)
+            .putFloat("weekly_utilization", 0f)
             .putLong("weekly_resets_at", now - 1000)
             .apply()
 
@@ -152,27 +156,49 @@ class ResetAlarmReceiverTest {
     }
 
     @Test
+    fun onReceive_postsNotification_whenOnly5hLimitReachedAndWeeklyResetStillInFuture() {
+        val now = System.currentTimeMillis()
+        context.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .putFloat("utilization", 100f)
+            .putLong("resets_at", now - 1000)
+            .putFloat("weekly_utilization", 50f)
+            .putLong("weekly_resets_at", now + 3600_000)
+            .apply()
+
+        val intent = Intent("com.tokenaddict.app.RESET_ALARM_CLAUDE")
+        receiver.onReceive(context, intent)
+
+        verify(mockNotificationManager).notify(eq(1001), any(android.app.Notification::class.java))
+    }
+
+    @Test
     fun shouldNotify_returnsTrue_whenBothResetTimesHavePassed() {
-        assertTrue(ResetAlarmReceiver.shouldNotify(100L, 200L, 300L))
+        assertTrue(ResetAlarmReceiver.shouldNotify(100L, 200L, 300L, 100f, 100f))
     }
 
     @Test
     fun shouldNotify_returnsTrue_whenResetTimesAreUnset() {
-        assertTrue(ResetAlarmReceiver.shouldNotify(0L, 0L, 300L))
+        assertTrue(ResetAlarmReceiver.shouldNotify(0L, 0L, 300L, 100f, 100f))
+    }
+
+    @Test
+    fun shouldNotify_returnsTrue_whenOnly5hLimitReachedAndWeeklyResetStillInFuture() {
+        assertTrue(ResetAlarmReceiver.shouldNotify(100L, 400L, 300L, 100f, 50f))
     }
 
     @Test
     fun shouldNotify_returnsFalse_whenWeeklyResetStillInFuture() {
-        assertFalse(ResetAlarmReceiver.shouldNotify(100L, 400L, 300L))
+        assertFalse(ResetAlarmReceiver.shouldNotify(100L, 400L, 300L, 100f, 100f))
     }
 
     @Test
     fun shouldNotify_returnsFalse_when5hResetStillInFuture() {
-        assertFalse(ResetAlarmReceiver.shouldNotify(400L, 100L, 300L))
+        assertFalse(ResetAlarmReceiver.shouldNotify(400L, 100L, 300L, 100f, 100f))
     }
 
     @Test
     fun shouldNotify_returnsFalse_whenBothResetsStillInFuture() {
-        assertFalse(ResetAlarmReceiver.shouldNotify(400L, 500L, 300L))
+        assertFalse(ResetAlarmReceiver.shouldNotify(400L, 500L, 300L, 100f, 100f))
     }
 }

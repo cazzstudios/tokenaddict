@@ -27,8 +27,16 @@ class ResetAlarmReceiver : BroadcastReceiver() {
         private const val ACTION_SUFFIX_KIMI = "RESET_ALARM_KIMI"
 
         @JvmStatic
-        fun shouldNotify(resetsAt: Long, weeklyResetsAt: Long, now: Long): Boolean {
-            return isResetTimePassed(resetsAt, now) && isResetTimePassed(weeklyResetsAt, now)
+        fun shouldNotify(
+            resetsAt: Long,
+            weeklyResetsAt: Long,
+            now: Long,
+            utilization: Float,
+            weeklyUtilization: Float
+        ): Boolean {
+            val fiveHourSatisfied = utilization < 100.0f || isResetTimePassed(resetsAt, now)
+            val weeklySatisfied = weeklyUtilization < 100.0f || isResetTimePassed(weeklyResetsAt, now)
+            return fiveHourSatisfied && weeklySatisfied
         }
 
         private fun isResetTimePassed(resetTime: Long, now: Long): Boolean {
@@ -59,8 +67,10 @@ class ResetAlarmReceiver : BroadcastReceiver() {
         val now = System.currentTimeMillis()
         val resetsAt = prefs.getLong("resets_at", 0L)
         val weeklyResetsAt = prefs.getLong("weekly_resets_at", 0L)
+        val utilization = prefs.getFloat("utilization", 0f)
+        val weeklyUtilization = prefs.getFloat("weekly_utilization", 0f)
 
-        if (notificationsEnabled && shouldNotify(resetsAt, weeklyResetsAt, now)) {
+        if (notificationsEnabled && shouldNotify(resetsAt, weeklyResetsAt, now, utilization, weeklyUtilization)) {
             val title = context.getString(R.string.notification_reset_title)
             val message = NotificationMessageProvider(context).getResetMessage(providerId)
 
