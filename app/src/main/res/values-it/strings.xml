@@ -82,8 +82,8 @@
     <string name="exact_alarm_dialog_cancel">Non Ora</string>
 
     <!-- Post-Login Permission Dialog -->
-    <string name="permission_dialog_title">Configura Notifiche</string>
-    <string name="permission_dialog_message">Token Addict monitora i tuoi limiti di utilizzo di Claude e Kimi in background. Per inviarti notifiche tempestive quando vengono reimpostati, l\'app ha bisogno di alcune autorizzazioni.\n\nControllale e concedile nelle impostazioni di sistema.</string>
+    <string name="permission_dialog_title">Configura Autorizzazioni</string>
+    <string name="permission_dialog_message">Token Addict ha bisogno delle seguenti autorizzazioni per funzionare correttamente in background:\n\n• Notifiche — per avvisarti quando i limiti di utilizzo vengono reimpostati\n• Allarmi esatti — per programmare notifiche puntuali di reset\n• Esonero dall\'ottimizzazione batteria — per impedire al sistema di fermare i controlli in background\n\nAttivale nella schermata informativa dell\'app qui sotto.</string>
     <string name="permission_dialog_open_settings">Apri Impostazioni App</string>
     <string name="permission_dialog_not_now">Non Ora</string>
     <string name="about_title">Informazioni</string>

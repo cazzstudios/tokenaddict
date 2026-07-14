@@ -86,8 +86,8 @@
     <string name="exact_alarm_dialog_cancel">Not Now</string>
 
     <!-- Post-Login Permission Dialog -->
-    <string name="permission_dialog_title">Set Up Notifications</string>
-    <string name="permission_dialog_message">Token Addict monitors your Claude and Kimi usage limits in the background. To send you timely notifications when they reset, the app needs a few permissions.\n\nPlease review and grant them in the system settings.</string>
+    <string name="permission_dialog_title">Set Up Permissions</string>
+    <string name="permission_dialog_message">Token Addict needs the following permissions to work reliably in the background:\n\n• Notifications — to alert you when usage limits reset\n• Exact alarms — to schedule timely reset notifications\n• Battery optimization exemption — to prevent the system from stopping background checks\n\nPlease enable these in the app info screen below.</string>
     <string name="permission_dialog_open_settings">Open App Settings</string>
     <string name="permission_dialog_not_now">Not Now</string>
     <string name="about_title">About</string>
