@@ -21,6 +21,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.robolectric.shadows.ShadowLooper
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = android.app.Application::class)
@@ -458,5 +459,44 @@ class MainViewModelTest {
 
         val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
         assertEquals("", state.limitCountdownText)
+    }
+
+    @Test
+    fun sharedPreferencesListener_updatesClaudeStateOnPrefsChange() {
+        val futureMillis = System.currentTimeMillis() + 3_600_000L
+        prefs.edit()
+            .putFloat("utilization", 0.75f)
+            .putLong("resets_at", futureMillis)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 0.0f)
+            .putLong("weekly_resets_at", 0L)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        ShadowLooper.idleMainLooper()
+
+        val state = viewModel.claudeState.value as MainViewModel.UiState.UsageData
+        assertEquals(0.75, state.utilization, 0.01)
+    }
+
+    @Test
+    fun sharedPreferencesListener_updatesKimiStateOnPrefsChange() {
+        val kimiPrefs = application.getSharedPreferences("usage_prefs_kimi", Context.MODE_PRIVATE)
+        val futureMillis = System.currentTimeMillis() + 3_600_000L
+        kimiPrefs.edit()
+            .putFloat("utilization", 0.6f)
+            .putLong("resets_at", futureMillis)
+            .putBoolean("is_reset", false)
+            .putFloat("weekly_utilization", 0.45f)
+            .putLong("weekly_resets_at", futureMillis)
+            .putBoolean("weekly_is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        ShadowLooper.idleMainLooper()
+
+        val state = viewModel.kimiState.value as MainViewModel.UiState.UsageData
+        assertEquals(0.6, state.utilization, 0.01)
     }
 }

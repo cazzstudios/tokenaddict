@@ -85,10 +85,14 @@ class MainViewModel @JvmOverloads constructor(
     }
 
     private val claudePrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-        loadUsageData("claude")
+        viewModelScope.launch {
+            loadUsageData("claude")
+        }
     }
     private val kimiPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
-        loadUsageData("kimi")
+        viewModelScope.launch {
+            loadUsageData("kimi")
+        }
     }
 
     private var claudeResetsAtMillis: Long = 0L
@@ -142,16 +146,15 @@ class MainViewModel @JvmOverloads constructor(
 
     fun refresh(providerId: String? = null) {
         if (providerId == null || providerId == "claude") {
+            _claudeState.value = UiState.Loading
             val workRequest = OneTimeWorkRequestBuilder<ClaudeUsageWorker>().build()
             val workManager = WorkManager.getInstance(getApplication())
             workManager.enqueue(workRequest)
             val workLiveData = workManager.getWorkInfoByIdLiveData(workRequest.id)
             val observer = object : Observer<WorkInfo?> {
                 override fun onChanged(workInfo: WorkInfo?) {
-                    if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
-                        loadUsageData("claude")
-                    }
                     if (workInfo == null || workInfo.state.isFinished) {
+                        checkSession("claude")
                         workLiveData.removeObserver(this)
                     }
                 }
@@ -159,16 +162,15 @@ class MainViewModel @JvmOverloads constructor(
             workLiveData.observeForever(observer)
         }
         if (providerId == null || providerId == "kimi") {
+            _kimiState.value = UiState.Loading
             val workRequest = OneTimeWorkRequestBuilder<KimiUsageWorker>().build()
             val workManager = WorkManager.getInstance(getApplication())
             workManager.enqueue(workRequest)
             val workLiveData = workManager.getWorkInfoByIdLiveData(workRequest.id)
             val observer = object : Observer<WorkInfo?> {
                 override fun onChanged(workInfo: WorkInfo?) {
-                    if (workInfo != null && workInfo.state == WorkInfo.State.SUCCEEDED) {
-                        loadUsageData("kimi")
-                    }
                     if (workInfo == null || workInfo.state.isFinished) {
+                        checkSession("kimi")
                         workLiveData.removeObserver(this)
                     }
                 }
