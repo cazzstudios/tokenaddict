@@ -129,6 +129,7 @@ class KimiOAuthManager(
 
         if (!response.isSuccessful) {
             when (response.code) {
+                400 -> throw ApiException.Unauthorized("Token refresh HTTP 400 (invalid_grant): $responseBody")
                 401 -> throw ApiException.Unauthorized("Token refresh HTTP 401: $responseBody")
                 403 -> throw ApiException.Forbidden("Token refresh HTTP 403: $responseBody")
                 else -> throw ApiException.NetworkError("Token refresh HTTP ${response.code}: $responseBody")

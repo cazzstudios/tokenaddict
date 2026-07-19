@@ -135,7 +135,7 @@ class MainViewModel @JvmOverloads constructor(
                 else -> state.value = UiState.LoggedOut
             }
         } else if (providerId == "kimi") {
-            val hasTokens = kimiTokenManager.getAccessToken() != null
+            val hasTokens = kimiTokenManager.getAccessToken() != null && kimiTokenManager.isAccessTokenValid()
             if (!hasTokens) {
                 state.value = UiState.LoggedOut
             } else {

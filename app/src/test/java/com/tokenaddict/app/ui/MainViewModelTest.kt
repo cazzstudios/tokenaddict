@@ -481,6 +481,29 @@ class MainViewModelTest {
     }
 
     @Test
+    fun checkSession_kimi_expiredToken_emitsLoggedOut() {
+        val kimiPrefs = application.getSharedPreferences("usage_prefs_kimi", Context.MODE_PRIVATE)
+        kimiPrefs.edit()
+            .putFloat("utilization", 0.6f)
+            .putLong("resets_at", System.currentTimeMillis() + 3_600_000L)
+            .putBoolean("is_reset", false)
+            .putLong("last_checked", System.currentTimeMillis())
+            .commit()
+
+        kimiTokenManager.saveTokens(com.tokenaddict.app.data.model.KimiOAuthTokens(
+            accessToken = "expired_token",
+            refreshToken = "expired_refresh",
+            expiresAt = System.currentTimeMillis() - 1000L
+        ))
+
+        viewModel.checkSession("kimi")
+
+        val state = viewModel.kimiState.value
+        assertTrue("Expected LoggedOut but got ${state?.let { it::class.simpleName }}",
+            state is MainViewModel.UiState.LoggedOut)
+    }
+
+    @Test
     fun sharedPreferencesListener_updatesKimiStateOnPrefsChange() {
         val kimiPrefs = application.getSharedPreferences("usage_prefs_kimi", Context.MODE_PRIVATE)
         val futureMillis = System.currentTimeMillis() + 3_600_000L

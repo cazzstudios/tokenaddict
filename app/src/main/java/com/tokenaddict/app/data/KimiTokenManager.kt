@@ -1,6 +1,7 @@
 package com.tokenaddict.app.data
 
 import android.os.Build
+import com.tokenaddict.app.data.model.ApiException
 import com.tokenaddict.app.data.model.KimiOAuthTokens
 import com.google.gson.Gson
 import okhttp3.Interceptor
@@ -65,6 +66,10 @@ class KimiTokenManager(
                 refreshToken = newRefreshToken,
                 expiresAt = expiresAt
             ))
+        } catch (e: ApiException.Unauthorized) {
+            throw e
+        } catch (e: ApiException.Forbidden) {
+            throw e
         } catch (e: Exception) {
             android.util.Log.e(TAG, "Token refresh failed: ${e.message}", e)
         }

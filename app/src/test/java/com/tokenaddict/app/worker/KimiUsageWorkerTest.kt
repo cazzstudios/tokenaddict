@@ -326,4 +326,34 @@ class KimiUsageWorkerTest {
 
         runBlocking { verify(mockTokenManager).refreshTokenIfNeeded() }
     }
+
+    @Test
+    fun `doWork clears tokens and notifies when token refresh returns Unauthorized`() {
+        runBlocking {
+            `when`(mockTokenManager.refreshTokenIfNeeded())
+                .thenThrow(ApiException.Unauthorized("Token refresh HTTP 401"))
+        }
+
+        val result = runBlocking { worker.executeWork() }
+
+        assertEquals(ListenableWorker.Result.failure(), result)
+        verify(mockTokenManager).clearTokens()
+        verify(mockNotificationScheduler).cancelResetNotification()
+        verify(mockNotificationScheduler).showReloginNotification()
+    }
+
+    @Test
+    fun `doWork clears tokens and notifies when token refresh returns Forbidden`() {
+        runBlocking {
+            `when`(mockTokenManager.refreshTokenIfNeeded())
+                .thenThrow(ApiException.Forbidden("Token refresh HTTP 403"))
+        }
+
+        val result = runBlocking { worker.executeWork() }
+
+        assertEquals(ListenableWorker.Result.failure(), result)
+        verify(mockTokenManager).clearTokens()
+        verify(mockNotificationScheduler).cancelResetNotification()
+        verify(mockNotificationScheduler).showReloginNotification()
+    }
 }

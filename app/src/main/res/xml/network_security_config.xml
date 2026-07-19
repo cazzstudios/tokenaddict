@@ -2,10 +2,9 @@
 <!--
   Network Security Configuration
 
-  Pins are SHA-256 SPKI hashes fetched via openssl on 2026-06-24.
-  Each domain has two pins: the leaf certificate and its intermediate CA.
-  This ensures continuity across certificate renewals (intermediate stays stable
-  while leaf rotates) and provides a backup if either certificate changes.
+  Pins are SHA-256 SPKI hashes fetched via openssl on 2026-07-14.
+  Each domain pins the intermediate CA and its root (or a backup root).
+  Pinning the intermediate + root avoids breakage on every leaf renewal.
 
   IMPORTANT: Before releasing to production, verify pins match live certificates
   by running:
@@ -25,27 +24,29 @@
 
     <!--
       claude.ai / www.claude.ai
-      CA: Let's Encrypt (E8 intermediate)
-      Fetched: 2026-06-24
+      CA: Let's Encrypt (YE1 intermediate, Root YE, cross-signed by ISRG Root X2)
+      Fetched: 2026-07-14
     -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">claude.ai</domain>
         <pin-set expiration="2027-12-31">
-            <!-- Leaf certificate (claude.ai) -->
-            <!-- Source: fetched from live TLS cert on 2026-06-24 -->
-            <pin digest="SHA-256">RVJ9maMywSmP1W5/pu+utbu4Y9lFXHzRzplyqdyTcgw=</pin>
-            <!-- Intermediate CA: Let's Encrypt E8 -->
-            <!-- Source: fetched from live TLS chain on 2026-06-24 -->
-            <pin digest="SHA-256">iFvwVyJSxnQdyaUvUERIf+8qk7gRze3612JMwoO3zdU=</pin>
+            <!-- Intermediate CA: Let's Encrypt YE1 -->
+            <pin digest="SHA-256">brzvtCELCIZUo4sD/qPX0ccRtPsd3DY6RfmxpOU9oB4=</pin>
+            <!-- Root CA: Let's Encrypt Root YE -->
+            <pin digest="SHA-256">sCkq5UWXjg+7mKu9lMhhYF5bGLsy7VI/UNW3tccdR7w=</pin>
+            <!-- Backup root CA: ISRG Root X2 -->
+            <pin digest="SHA-256">diGVwiVYbubAI3RW4hB9xU8e/CH2GnkuvVFZE8zmgzI=</pin>
         </pin-set>
         <trust-anchors>
             <certificates src="system" />
+            <certificates src="@raw/isrg_root_x2" />
+            <certificates src="@raw/root_ye" />
         </trust-anchors>
     </domain-config>
 
     <!--
       anthropic.com
-      CA: Let's Encrypt (YE2 intermediate)
+      CA: Let's Encrypt (YE2 intermediate). Kept for backwards compatibility.
       Fetched: 2026-06-24
     -->
     <domain-config cleartextTrafficPermitted="false">
@@ -60,23 +61,23 @@
         </pin-set>
         <trust-anchors>
             <certificates src="system" />
+            <certificates src="@raw/isrg_root_x2" />
+            <certificates src="@raw/root_ye" />
         </trust-anchors>
     </domain-config>
 
     <!--
       auth.kimi.com
-      CA: Google Trust Services (WE1 intermediate)
-      Fetched: 2026-06-24
+      CA: Google Trust Services (WE1 intermediate, GTS Root R4)
+      Fetched: 2026-07-14
     -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">auth.kimi.com</domain>
         <pin-set expiration="2027-12-31">
-            <!-- Leaf certificate (auth.kimi.com) -->
-            <!-- Source: fetched from live TLS cert on 2026-06-24 -->
-            <pin digest="SHA-256">aE6bN2jN56QtKx7BxFG3xwxDUkHennmtdhmXl81CU60=</pin>
             <!-- Intermediate CA: Google Trust Services WE1 -->
-            <!-- Source: fetched from live TLS chain on 2026-06-24 -->
             <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+            <!-- Root CA: Google Trust Services GTS Root R4 -->
+            <pin digest="SHA-256">mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</pin>
         </pin-set>
         <trust-anchors>
             <certificates src="system" />
@@ -85,18 +86,16 @@
 
     <!--
       api.kimi.com
-      CA: Google Trust Services (WE1 intermediate)
-      Fetched: 2026-06-24
+      CA: Google Trust Services (WE1 intermediate, GTS Root R4)
+      Fetched: 2026-07-14
     -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">api.kimi.com</domain>
         <pin-set expiration="2027-12-31">
-            <!-- Leaf certificate (api.kimi.com) -->
-            <!-- Source: fetched from live TLS cert on 2026-06-24 -->
-            <pin digest="SHA-256">yMpIHG4SFY2KfO+qJZaqfJLVrX/kEZgShenjfEs2y5A=</pin>
             <!-- Intermediate CA: Google Trust Services WE1 -->
-            <!-- Source: fetched from live TLS chain on 2026-06-24 -->
             <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
+            <!-- Root CA: Google Trust Services GTS Root R4 -->
+            <pin digest="SHA-256">mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</pin>
         </pin-set>
         <trust-anchors>
             <certificates src="system" />

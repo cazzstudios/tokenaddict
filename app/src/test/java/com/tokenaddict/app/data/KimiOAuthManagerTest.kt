@@ -406,6 +406,23 @@ class KimiOAuthManagerTest {
     }
 
     @Test
+    fun `refreshAccessToken throws Unauthorized on 400 invalid_grant`() {
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(400)
+                .setBody("""{"error":"invalid_grant","error_description":"The provided authorization grant is invalid"}""")
+        )
+
+        try {
+            oauthManager.refreshAccessToken("expired_refresh_token")
+            fail("Expected ApiException.Unauthorized")
+        } catch (e: ApiException.Unauthorized) {
+            assertTrue(e.message!!.contains("400"))
+            assertTrue(e.message!!.contains("invalid_grant"))
+        }
+    }
+
+    @Test
     fun `refreshAccessToken throws NetworkError on other non-200`() {
         mockWebServer.enqueue(
             MockResponse()
