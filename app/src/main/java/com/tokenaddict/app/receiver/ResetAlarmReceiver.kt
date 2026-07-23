@@ -1,5 +1,7 @@
 package com.tokenaddict.app.receiver
 
+import android.os.Handler
+import android.os.Looper
 import androidx.core.app.NotificationManagerCompat
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
@@ -103,12 +105,16 @@ class ResetAlarmReceiver : BroadcastReceiver() {
             }
         }
 
-        val workRequest = if (providerId == "kimi") {
-            OneTimeWorkRequestBuilder<KimiUsageWorker>().build()
-        } else {
-            OneTimeWorkRequestBuilder<ClaudeUsageWorker>().build()
+        // Defer WorkManager enqueue off the main thread — BroadcastReceiver.onReceive()
+        // has a strict ~10s ANR limit and WorkManager init/enqueue can block.
+        Handler(context.mainLooper).post {
+            val workRequest = if (providerId == "kimi") {
+                OneTimeWorkRequestBuilder<KimiUsageWorker>().build()
+            } else {
+                OneTimeWorkRequestBuilder<ClaudeUsageWorker>().build()
+            }
+            WorkManager.getInstance(context).enqueue(workRequest)
         }
-        WorkManager.getInstance(context).enqueue(workRequest)
 
         prefs.edit().apply {
             if (resetsAt in 1..now) {

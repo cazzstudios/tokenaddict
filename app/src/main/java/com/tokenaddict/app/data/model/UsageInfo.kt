@@ -7,5 +7,8 @@ data class UsageInfo(
     val providerId: String,
     val weeklyUtilization: Double = 0.0,
     val weeklyResetsAt: String? = null,
-    val weeklyIsReset: Boolean = false
+    val weeklyIsReset: Boolean = false,
+    val fableUtilization: Double = 0.0,
+    val fableResetsAt: String? = null,
+    val fableIsReset: Boolean = false
 )

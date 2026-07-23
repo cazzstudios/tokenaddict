@@ -50,6 +50,9 @@ class MainViewModel @JvmOverloads constructor(
             val weeklyUtilization: Double = 0.0,
             val weeklyResetsIn: String = "",
             val weeklyIsReset: Boolean = false,
+            val fableUtilization: Double = 0.0,
+            val fableResetsIn: String = "",
+            val fableIsReset: Boolean = false,
             val hasReachedLimit: Boolean = false,
             val serviceChanged: Boolean = false,
             val limitCountdownText: String = "",
@@ -302,6 +305,10 @@ class MainViewModel @JvmOverloads constructor(
         val weeklyUtilization = if (weeklyIsReset) 0.0 else prefs.getFloat("weekly_utilization", 0f).toDouble()
         val weeklyResetsAtMillis = prefs.getLong("weekly_resets_at", 0L)
 
+        val fableIsReset = prefs.getBoolean("fable_is_reset", false)
+        val fableUtilization = if (fableIsReset) 0.0 else prefs.getFloat("fable_utilization", 0f).toDouble()
+        val fableResetsAtMillis = prefs.getLong("fable_resets_at", 0L)
+
         if (providerId == "claude") {
             claudeResetsAtMillis = resetsAtMillis
             claudeWeeklyResetsAtMillis = weeklyResetsAtMillis
@@ -359,6 +366,7 @@ class MainViewModel @JvmOverloads constructor(
 
         val timeRemaining = formatTimeRemaining(resetsAtMillis, isReset)
         val weeklyResetsIn = formatTimeRemaining(weeklyResetsAtMillis, weeklyIsReset)
+        val fableResetsIn = formatTimeRemaining(fableResetsAtMillis, fableIsReset)
 
         state.value = UiState.UsageData(
             utilization = utilization,
@@ -369,6 +377,9 @@ class MainViewModel @JvmOverloads constructor(
             weeklyUtilization = weeklyUtilization,
             weeklyResetsIn = weeklyResetsIn,
             weeklyIsReset = weeklyIsReset,
+            fableUtilization = fableUtilization,
+            fableResetsIn = fableResetsIn,
+            fableIsReset = fableIsReset,
             hasReachedLimit = hasReachedLimit,
             serviceChanged = serviceChanged,
             limitCountdownText = limitCountdownText,

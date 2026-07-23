@@ -59,13 +59,6 @@ class NotificationScheduler(private val context: Context, private val providerId
             return
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (!alarmManager.canScheduleExactAlarms()) {
-                Log.w(TAG, "scheduleResetNotification: missing SCHEDULE_EXACT_ALARM permission — cannot schedule exact alarm")
-                return
-            }
-        }
-
         val intent = Intent(context, ResetAlarmReceiver::class.java).apply {
             action = getAction()
         }
@@ -76,11 +69,20 @@ class NotificationScheduler(private val context: Context, private val providerId
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        alarmManager.setExactAndAllowWhileIdle(
-            AlarmManager.RTC_WAKEUP,
-            resetTimeMillis,
-            pendingIntent
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            Log.w(TAG, "scheduleResetNotification: missing SCHEDULE_EXACT_ALARM — using non-exact fallback")
+            alarmManager.setAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                resetTimeMillis,
+                pendingIntent
+            )
+        } else {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                resetTimeMillis,
+                pendingIntent
+            )
+        }
 
         prefs.edit().putLong(KEY_SCHEDULED_RESET_TIME, resetTimeMillis).apply()
     }

@@ -51,7 +51,8 @@ object WorkerUtils {
 fun SharedPreferences.Editor.writeUsagePrefs(
     usageInfo: UsageInfo,
     resetTimeMillis: Long,
-    weeklyResetTimeMillis: Long
+    weeklyResetTimeMillis: Long,
+    fableResetTimeMillis: Long = 0L
 ): SharedPreferences.Editor {
     return this
         .putFloat("utilization", usageInfo.utilization.toFloat())
@@ -60,5 +61,8 @@ fun SharedPreferences.Editor.writeUsagePrefs(
         .putFloat("weekly_utilization", usageInfo.weeklyUtilization.toFloat())
         .putLong("weekly_resets_at", weeklyResetTimeMillis)
         .putBoolean("weekly_is_reset", usageInfo.weeklyIsReset)
+        .putFloat("fable_utilization", usageInfo.fableUtilization.toFloat())
+        .putLong("fable_resets_at", fableResetTimeMillis)
+        .putBoolean("fable_is_reset", usageInfo.fableIsReset)
         .putLong("last_checked", System.currentTimeMillis())
 }

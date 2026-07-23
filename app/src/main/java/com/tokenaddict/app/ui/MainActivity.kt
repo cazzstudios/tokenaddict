@@ -22,10 +22,10 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import com.tokenaddict.app.R
 import com.google.android.material.button.MaterialButton
@@ -46,6 +46,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var claudeFiveHourResetsIn: TextView
     private lateinit var claudeWeeklyProgress: ProgressBar
     private lateinit var claudeWeeklyResetsIn: TextView
+    private lateinit var claudeFableProgress: ProgressBar
     private lateinit var claudeLastCheckedText: TextView
 
     private lateinit var claudeServiceChangedBanner: TextView
@@ -267,6 +268,7 @@ class MainActivity : AppCompatActivity() {
         claudeFiveHourResetsIn = findViewById(R.id.claudeFiveHourResetsIn)
         claudeWeeklyProgress = findViewById(R.id.claudeWeeklyProgress)
         claudeWeeklyResetsIn = findViewById(R.id.claudeWeeklyResetsIn)
+        claudeFableProgress = findViewById(R.id.claudeFableProgress)
         claudeLastCheckedText = findViewById(R.id.claudeLastCheckedText)
         claudeServiceChangedBanner = findViewById(R.id.claude_service_changed_banner)
 
@@ -393,6 +395,9 @@ class MainActivity : AppCompatActivity() {
         } else {
             "$weeklyPercent%"
         }
+
+        val fablePercent = data.fableUtilization.toInt()
+        claudeFableProgress.progress = fablePercent
 
         updateCountdownDisplay(
             robotIcon = claudeRobotIcon,

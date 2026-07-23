@@ -85,11 +85,12 @@ class ClaudeUsageWorker(
 
             val (resetTimeMillis, _) = TimeUtils.computeResetState(usageInfo.resetsAt, TAG)
             val (weeklyResetTimeMillis, _) = TimeUtils.computeResetState(usageInfo.weeklyResetsAt, TAG)
+            val (fableResetTimeMillis, _) = TimeUtils.computeResetState(usageInfo.fableResetsAt, TAG)
 
             try {
                 val prefs: SharedPreferences = applicationContext.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE)
                 prefs.edit()
-                    .writeUsagePrefs(usageInfo, resetTimeMillis, weeklyResetTimeMillis)
+                    .writeUsagePrefs(usageInfo, resetTimeMillis, weeklyResetTimeMillis, fableResetTimeMillis)
                     .putBoolean("claude_service_changed", false)
                     .apply()
             } catch (e: Exception) { Log.e(TAG, "Failed to write usage prefs", e) }

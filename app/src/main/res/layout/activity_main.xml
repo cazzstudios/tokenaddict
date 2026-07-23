@@ -161,6 +161,16 @@
                                     android:max="100"
                                     android:progressTint="@color/progress_five_hour" />
 
+                                <!-- Fable progress bar -->
+                                <ProgressBar
+                                    android:id="@+id/claudeFableProgress"
+                                    style="?android:attr/progressBarStyleHorizontal"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:max="100"
+                                    android:progressTint="@color/progress_fable" />
+
                                 <!-- Weekly progress bar -->
                                 <ProgressBar
                                     android:id="@+id/claudeWeeklyProgress"

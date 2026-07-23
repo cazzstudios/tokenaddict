@@ -34,6 +34,7 @@
     <!-- Progress Bar Colors -->
     <color name="progress_five_hour">#FF2196F3</color>
     <color name="progress_weekly">#FF4CAF50</color>
+    <color name="progress_fable">#FFFF9800</color>
 
     <!-- Reset Time Component Colors -->
     <color name="reset_time_days">#FF5E35B1</color>

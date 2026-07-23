@@ -102,6 +102,13 @@ class ClaudeProvider(
 
         val weeklyIsReset = weeklyResetsAtStr?.parseResetTimeStrict()?.isReset() ?: false
 
+        val fableLimit = usageResponse.limits?.firstOrNull { limit ->
+            limit.scope?.model?.displayName != null
+        }
+        val fableUtilization = fableLimit?.percent ?: 0.0
+        val fableResetsAtStr = fableLimit?.resetsAt
+        val fableIsReset = fableResetsAtStr?.parseResetTimeStrict()?.isReset() ?: false
+
         return UsageInfo(
             utilization = utilization,
             resetsAt = resetsAtStr,
@@ -109,6 +116,9 @@ class ClaudeProvider(
             weeklyUtilization = weeklyUtilization,
             weeklyResetsAt = weeklyResetsAtStr,
             weeklyIsReset = weeklyIsReset,
+            fableUtilization = fableUtilization,
+            fableResetsAt = fableResetsAtStr,
+            fableIsReset = fableIsReset,
             providerId = "claude"
         )
     }

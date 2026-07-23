@@ -9,5 +9,6 @@ data class UsageResponse(
     @SerializedName("seven_day_opus") val sevenDayOpus: Window?,
     @SerializedName("seven_day_oauth_apps") val sevenDayOauthApps: Window?,
     @SerializedName("seven_day_cowork") val sevenDayCowork: Window?,
-    val extraUsage: ExtraUsage?
+    val extraUsage: ExtraUsage?,
+    val limits: List<ModelLimit>?
 )
