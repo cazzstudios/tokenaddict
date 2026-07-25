@@ -42,11 +42,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var claudeLoadingContainer: LinearLayout
     private lateinit var claudeLoggedOutContainer: LinearLayout
     private lateinit var claudeUsageContainer: LinearLayout
-    private lateinit var claudeFiveHourProgress: ProgressBar
+    private lateinit var claudeFiveHourProgress: ProgressWithMarkerView
     private lateinit var claudeFiveHourResetsIn: TextView
-    private lateinit var claudeWeeklyProgress: ProgressBar
+    private lateinit var claudeWeeklyProgress: ProgressWithMarkerView
     private lateinit var claudeWeeklyResetsIn: TextView
-    private lateinit var claudeFableProgress: ProgressBar
+    private lateinit var claudeFableProgress: ProgressWithMarkerView
     private lateinit var claudeLastCheckedText: TextView
 
     private lateinit var claudeServiceChangedBanner: TextView
@@ -54,9 +54,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var kimiLoadingContainer: LinearLayout
     private lateinit var kimiLoggedOutContainer: LinearLayout
     private lateinit var kimiUsageContainer: LinearLayout
-    private lateinit var kimiFiveHourProgress: ProgressBar
+    private lateinit var kimiFiveHourProgress: ProgressWithMarkerView
     private lateinit var kimiFiveHourResetsIn: TextView
-    private lateinit var kimiWeeklyProgress: ProgressBar
+    private lateinit var kimiWeeklyProgress: ProgressWithMarkerView
     private lateinit var kimiWeeklyResetsIn: TextView
     private lateinit var kimiLastCheckedText: TextView
 
@@ -380,6 +380,9 @@ class MainActivity : AppCompatActivity() {
 
         val fiveHourPercent = data.utilization.toInt()
         claudeFiveHourProgress.progress = fiveHourPercent
+        claudeFiveHourProgress.markerPosition = computeMarkerPosition(
+            data.resetsAtMillis, FIVE_HOUR_DURATION_MS, data.isReset
+        )
 
         claudeFiveHourResetsIn.text = if (data.timeRemaining.isNotEmpty() && data.timeRemaining != getString(R.string.n_a)) {
             buildResetLabel("$fiveHourPercent%", data.timeRemaining)
@@ -389,6 +392,9 @@ class MainActivity : AppCompatActivity() {
 
         val weeklyPercent = data.weeklyUtilization.toInt()
         claudeWeeklyProgress.progress = weeklyPercent
+        claudeWeeklyProgress.markerPosition = computeMarkerPosition(
+            data.weeklyResetsAtMillis, WEEKLY_DURATION_MS, data.weeklyIsReset
+        )
 
         claudeWeeklyResetsIn.text = if (data.weeklyResetsIn.isNotEmpty() && data.weeklyResetsIn != getString(R.string.n_a)) {
             buildResetLabel("$weeklyPercent%", data.weeklyResetsIn)
@@ -398,6 +404,9 @@ class MainActivity : AppCompatActivity() {
 
         val fablePercent = data.fableUtilization.toInt()
         claudeFableProgress.progress = fablePercent
+        claudeFableProgress.markerPosition = computeMarkerPosition(
+            data.fableResetsAtMillis, WEEKLY_DURATION_MS, data.fableIsReset
+        )
 
         updateCountdownDisplay(
             robotIcon = claudeRobotIcon,
@@ -438,6 +447,9 @@ class MainActivity : AppCompatActivity() {
 
         val fiveHourPercent = data.utilization.toInt()
         kimiFiveHourProgress.progress = fiveHourPercent
+        kimiFiveHourProgress.markerPosition = computeMarkerPosition(
+            data.resetsAtMillis, FIVE_HOUR_DURATION_MS, data.isReset
+        )
 
         kimiFiveHourResetsIn.text = if (data.timeRemaining.isNotEmpty() && data.timeRemaining != getString(R.string.n_a)) {
             buildResetLabel("$fiveHourPercent%", data.timeRemaining)
@@ -447,6 +459,9 @@ class MainActivity : AppCompatActivity() {
 
         val weeklyPercent = data.weeklyUtilization.toInt()
         kimiWeeklyProgress.progress = weeklyPercent
+        kimiWeeklyProgress.markerPosition = computeMarkerPosition(
+            data.weeklyResetsAtMillis, WEEKLY_DURATION_MS, data.weeklyIsReset
+        )
 
         kimiWeeklyResetsIn.text = if (data.weeklyResetsIn.isNotEmpty() && data.weeklyResetsIn != getString(R.string.n_a)) {
             buildResetLabel("$weeklyPercent%", data.weeklyResetsIn)
@@ -661,5 +676,25 @@ class MainActivity : AppCompatActivity() {
         private const val KEY_NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"
         private const val PERMISSION_DIALOG_PREFS = "permission_dialog_prefs"
         private const val KEY_PERMISSION_DIALOG_SHOWN = "permission_dialog_shown"
+        private const val FIVE_HOUR_DURATION_MS = 5L * 60 * 60 * 1000
+        private const val WEEKLY_DURATION_MS = 7L * 24 * 60 * 60 * 1000
+    }
+
+    /**
+     * Compute where the pace marker should appear (0–100 %) given the reset
+     * timestamp and fixed window duration.  Returns -1 (hidden) when the
+     * window has already reset or the data is unavailable.
+     */
+    private fun computeMarkerPosition(
+        resetsAtMillis: Long,
+        windowDurationMs: Long,
+        isReset: Boolean
+    ): Float {
+        if (isReset || resetsAtMillis <= 0L) return -1f
+        val now = System.currentTimeMillis()
+        if (now >= resetsAtMillis) return -1f
+        val windowStart = resetsAtMillis - windowDurationMs
+        val elapsed = (now - windowStart).coerceIn(0L, windowDurationMs)
+        return (elapsed * 100f / windowDurationMs).coerceIn(0f, 100f)
     }
 }

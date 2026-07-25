@@ -53,10 +53,13 @@ class MainViewModel @JvmOverloads constructor(
             val fableUtilization: Double = 0.0,
             val fableResetsIn: String = "",
             val fableIsReset: Boolean = false,
+            val fableResetsAtMillis: Long = 0L,
             val hasReachedLimit: Boolean = false,
             val serviceChanged: Boolean = false,
             val limitCountdownText: String = "",
-            val countdownHasDays: Boolean = false
+            val countdownHasDays: Boolean = false,
+            val resetsAtMillis: Long = 0L,
+            val weeklyResetsAtMillis: Long = 0L
         ) : UiState()
     }
 
@@ -380,10 +383,13 @@ class MainViewModel @JvmOverloads constructor(
             fableUtilization = fableUtilization,
             fableResetsIn = fableResetsIn,
             fableIsReset = fableIsReset,
+            fableResetsAtMillis = fableResetsAtMillis,
             hasReachedLimit = hasReachedLimit,
             serviceChanged = serviceChanged,
             limitCountdownText = limitCountdownText,
-            countdownHasDays = countdownHasDays
+            countdownHasDays = countdownHasDays,
+            resetsAtMillis = resetsAtMillis,
+            weeklyResetsAtMillis = weeklyResetsAtMillis
         )
     }
 

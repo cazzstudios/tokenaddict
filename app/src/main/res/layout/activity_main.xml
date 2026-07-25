@@ -152,7 +152,7 @@
                                     android:textAppearance="?attr/textAppearanceBodyMedium" />
 
                                 <!-- 5-hour progress bar -->
-                                <ProgressBar
+                                <com.tokenaddict.app.ui.ProgressWithMarkerView
                                     android:id="@+id/claudeFiveHourProgress"
                                     style="?android:attr/progressBarStyleHorizontal"
                                     android:layout_width="match_parent"
@@ -162,7 +162,7 @@
                                     android:progressTint="@color/progress_five_hour" />
 
                                 <!-- Fable progress bar -->
-                                <ProgressBar
+                                <com.tokenaddict.app.ui.ProgressWithMarkerView
                                     android:id="@+id/claudeFableProgress"
                                     style="?android:attr/progressBarStyleHorizontal"
                                     android:layout_width="match_parent"
@@ -172,7 +172,7 @@
                                     android:progressTint="@color/progress_fable" />
 
                                 <!-- Weekly progress bar -->
-                                <ProgressBar
+                                <com.tokenaddict.app.ui.ProgressWithMarkerView
                                     android:id="@+id/claudeWeeklyProgress"
                                     style="?android:attr/progressBarStyleHorizontal"
                                     android:layout_width="match_parent"
@@ -372,7 +372,7 @@
                                     android:textAppearance="?attr/textAppearanceBodyMedium" />
 
                                 <!-- 5-hour progress bar -->
-                                <ProgressBar
+                                <com.tokenaddict.app.ui.ProgressWithMarkerView
                                     android:id="@+id/kimiFiveHourProgress"
                                     style="?android:attr/progressBarStyleHorizontal"
                                     android:layout_width="match_parent"
@@ -382,7 +382,7 @@
                                     android:progressTint="@color/progress_five_hour" />
 
                                 <!-- Weekly progress bar -->
-                                <ProgressBar
+                                <com.tokenaddict.app.ui.ProgressWithMarkerView
                                     android:id="@+id/kimiWeeklyProgress"
                                     style="?android:attr/progressBarStyleHorizontal"
                                     android:layout_width="match_parent"
