@@ -25,7 +25,9 @@ class NotificationScheduler(private val context: Context, private val providerId
         private const val NOTIFICATION_ID_KIMI = 1002
         private const val NOTIFICATION_ID_RELOGIN_CLAUDE = 2001
         private const val NOTIFICATION_ID_RELOGIN_KIMI = 2002
+        private const val NOTIFICATION_ID_STATUS_RESOLVED = 3001
         private const val CHANNEL_ID_RELOGIN = "relogin_channel"
+        private const val CHANNEL_ID_STATUS = "status_channel"
         private const val KEY_SCHEDULED_RESET_TIME = "scheduled_reset_time"
         const val PREF_KEY_NOTIFICATION_ENABLED_CLAUDE = "notification_enabled_claude"
         const val PREF_KEY_NOTIFICATION_ENABLED_KIMI = "notification_enabled_kimi"
@@ -166,6 +168,50 @@ class NotificationScheduler(private val context: Context, private val providerId
         val managerCompat = NotificationManagerCompat.from(context)
         if (managerCompat.areNotificationsEnabled()) {
             managerCompat.notify(getReloginNotificationId(), notification)
+        }
+    }
+
+    fun showOutageResolvedNotification(description: String) {
+        if (!isEnabled()) {
+            return
+        }
+
+        val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+        if (notificationManager.getNotificationChannel(CHANNEL_ID_STATUS) == null) {
+            val channel = NotificationChannel(
+                CHANNEL_ID_STATUS,
+                context.getString(R.string.channel_status_name),
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = context.getString(R.string.channel_status_description)
+            }
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val intent = Intent(context, com.tokenaddict.app.ui.MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+
+        val contentIntent = PendingIntent.getActivity(
+            context,
+            NOTIFICATION_ID_STATUS_RESOLVED,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, CHANNEL_ID_STATUS)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.status_resolved_title))
+            .setContentText(context.getString(R.string.status_resolved_message, description))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .setContentIntent(contentIntent)
+            .build()
+
+        val managerCompat = NotificationManagerCompat.from(context)
+        if (managerCompat.areNotificationsEnabled()) {
+            managerCompat.notify(NOTIFICATION_ID_STATUS_RESOLVED, notification)
         }
     }
 }

@@ -28,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.lifecycle.ViewModelProvider
 import com.tokenaddict.app.R
+import com.tokenaddict.app.data.model.ClaudeStatusLevel
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
@@ -50,6 +51,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var claudeLastCheckedText: TextView
 
     private lateinit var claudeServiceChangedBanner: TextView
+
+    private lateinit var claudeStatusContainer: LinearLayout
+    private lateinit var claudeStatusDot: View
+    private lateinit var claudeStatusText: TextView
 
     private lateinit var kimiLoadingContainer: LinearLayout
     private lateinit var kimiLoggedOutContainer: LinearLayout
@@ -272,6 +277,10 @@ class MainActivity : AppCompatActivity() {
         claudeLastCheckedText = findViewById(R.id.claudeLastCheckedText)
         claudeServiceChangedBanner = findViewById(R.id.claude_service_changed_banner)
 
+        claudeStatusContainer = findViewById(R.id.claudeStatusContainer)
+        claudeStatusDot = findViewById(R.id.claudeStatusDot)
+        claudeStatusText = findViewById(R.id.claudeStatusText)
+
         kimiLoadingContainer = findViewById(R.id.kimiLoadingContainer)
         kimiLoggedOutContainer = findViewById(R.id.kimiLoggedOutContainer)
         kimiUsageContainer = findViewById(R.id.kimiUsageContainer)
@@ -355,6 +364,10 @@ class MainActivity : AppCompatActivity() {
                 is MainViewModel.UiState.LoggedOut -> showKimiLoggedOut()
                 is MainViewModel.UiState.UsageData -> showKimiUsageData(state)
             }
+        }
+
+        viewModel.claudeServiceStatus.observe(this) { status ->
+            updateServiceStatusUI(status)
         }
     }
 
@@ -487,6 +500,41 @@ class MainActivity : AppCompatActivity() {
         )
 
         kimiLastCheckedText.text = getString(R.string.last_checked, data.lastChecked)
+    }
+
+    private fun updateServiceStatusUI(status: MainViewModel.ServiceStatus?) {
+        if (status == null) {
+            claudeStatusContainer.visibility = View.GONE
+            return
+        }
+
+        claudeStatusContainer.visibility = View.VISIBLE
+
+        val level = ClaudeStatusLevel.fromIndicator(status.indicator)
+        val statusText: String
+        val dotDrawable: Int
+
+        when (level) {
+            ClaudeStatusLevel.NONE -> {
+                statusText = getString(R.string.status_operational)
+                dotDrawable = R.drawable.status_dot_operational
+            }
+            ClaudeStatusLevel.MINOR -> {
+                statusText = getString(R.string.status_degraded)
+                dotDrawable = R.drawable.status_dot_degraded
+            }
+            ClaudeStatusLevel.MAJOR -> {
+                statusText = getString(R.string.status_outage)
+                dotDrawable = R.drawable.status_dot_outage
+            }
+            ClaudeStatusLevel.CRITICAL -> {
+                statusText = getString(R.string.status_major_outage)
+                dotDrawable = R.drawable.status_dot_outage
+            }
+        }
+
+        claudeStatusText.text = statusText
+        claudeStatusDot.setBackgroundResource(dotDrawable)
     }
 
     private fun updateCountdownDisplay(

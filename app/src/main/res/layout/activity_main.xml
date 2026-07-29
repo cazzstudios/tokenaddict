@@ -46,6 +46,31 @@
                         android:textAppearance="?attr/textAppearanceTitleLarge"
                         android:textStyle="bold" />
 
+                    <!-- Service Status Indicator -->
+                    <LinearLayout
+                        android:id="@+id/claudeStatusContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <View
+                            android:id="@+id/claudeStatusDot"
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            android:background="@drawable/status_dot_operational" />
+
+                        <TextView
+                            android:id="@+id/claudeStatusText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
                     <!-- Service Changed Banner -->
                     <TextView
                         android:id="@+id/claude_service_changed_banner"

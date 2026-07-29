@@ -40,4 +40,9 @@
     <color name="reset_time_days">#FF5E35B1</color>
     <color name="reset_time_hours">#FFC62828</color>
     <color name="reset_time_minutes">#FFFF8A65</color>
+
+    <!-- Service Status Colors -->
+    <color name="status_operational">#FF4CAF50</color>
+    <color name="status_degraded">#FFFFC107</color>
+    <color name="status_outage">#FFF44336</color>
 </resources>

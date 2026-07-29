@@ -7,6 +7,8 @@
     <string name="channel_reset_description">Notifications when your usage limit resets</string>
     <string name="channel_limit_name">Limit Alerts</string>
     <string name="channel_limit_description">Notifications when approaching Token Addict usage limits</string>
+    <string name="channel_status_name">Service Status</string>
+    <string name="channel_status_description">Notifications when Claude service status changes</string>
 
     <!-- Notifications -->
     <string name="notification_reset_title">Usage Limit Reset</string>
@@ -14,6 +16,8 @@
     <string name="notification_reset_message_kimi">Kimi usage limit has been reset. Tap to check.</string>
     <string name="session_expired_title">Session Expired</string>
     <string name="session_expired_message">Your session has expired — tap to re-login.</string>
+    <string name="status_resolved_title">Claude Service Restored</string>
+    <string name="status_resolved_message">Claude is back online: %s</string>
     <string-array name="notification_reset_messages">
         <item>[agent] had an excellent nap! Ready to go back to work.</item>
         <item>[agent]\'s break is over, and yours is too. Go back to work!</item>
@@ -54,6 +58,13 @@
     <string name="countdown_separator">:</string>
 
     <string name="claude_service_changed_message">Claude.ai may have changed. Usage data may be unavailable until the app is updated.</string>
+
+    <!-- Service Status -->
+    <string name="status_operational">Operational</string>
+    <string name="status_degraded">Degraded</string>
+    <string name="status_outage">Outage</string>
+    <string name="status_major_outage">Major Outage</string>
+    <string name="status_checking">Checking status\u2026</string>
 
     <!-- Notification Permission Dialog -->
     <string name="notification_permission_title">Enable Notifications</string>

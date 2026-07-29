@@ -16,6 +16,7 @@ import com.tokenaddict.app.security.SecurityChecker
 import com.tokenaddict.app.security.SecurityStatus
 import com.tokenaddict.app.worker.KimiUsageWorker
 import com.tokenaddict.app.worker.ClaudeUsageWorker
+import com.tokenaddict.app.worker.ClaudeStatusWorker
 import java.util.concurrent.TimeUnit
 
 class TokenAddictApplication : Application() {
@@ -23,8 +24,10 @@ class TokenAddictApplication : Application() {
     companion object {
         const val CHANNEL_ID_RESET = "reset_channel"
         const val CHANNEL_ID_LIMIT = "limit_channel"
+        const val CHANNEL_ID_STATUS = "status_channel"
         const val PREF_KEY_POLLING_INTERVAL = "polling_interval"
         const val DEFAULT_POLLING_INTERVAL_MINUTES = 30L
+        const val STATUS_POLLING_INTERVAL_MINUTES = 30L
         private const val TAG = "GlobalHandler"
     }
 
@@ -34,6 +37,7 @@ class TokenAddictApplication : Application() {
         createNotificationChannels()
         schedulePeriodicWork()
         scheduleKimiPeriodicWork()
+        scheduleClaudeStatusWork()
         checkSecurityEnvironment()
     }
 
@@ -69,9 +73,18 @@ class TokenAddictApplication : Application() {
             description = getString(R.string.channel_limit_description)
         }
 
+        val statusChannel = NotificationChannel(
+            CHANNEL_ID_STATUS,
+            getString(R.string.channel_status_name),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = getString(R.string.channel_status_description)
+        }
+
         val notificationManager = getSystemService(NotificationManager::class.java)
         notificationManager.createNotificationChannel(resetChannel)
         notificationManager.createNotificationChannel(limitChannel)
+        notificationManager.createNotificationChannel(statusChannel)
     }
 
     private fun getPollingIntervalMinutes(): Long {
@@ -109,6 +122,22 @@ class TokenAddictApplication : Application() {
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "kimi_usage_check",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
+    private fun scheduleClaudeStatusWork() {
+        val workRequest = PeriodicWorkRequestBuilder<ClaudeStatusWorker>(
+            STATUS_POLLING_INTERVAL_MINUTES, TimeUnit.MINUTES
+        ).setConstraints(
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+        ).build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            ClaudeStatusWorker.NORMAL_POLLING_WORK_NAME,
             ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )

@@ -21,6 +21,7 @@ import com.tokenaddict.app.data.HttpConfig
 import com.tokenaddict.app.data.model.SessionState
 import com.tokenaddict.app.worker.ClaudeUsageWorker
 import com.tokenaddict.app.worker.KimiUsageWorker
+import com.tokenaddict.app.worker.ClaudeStatusWorker
 import com.google.gson.Gson
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -63,6 +64,12 @@ class MainViewModel @JvmOverloads constructor(
         ) : UiState()
     }
 
+    data class ServiceStatus(
+        val indicator: String,
+        val description: String,
+        val lastChecked: Long
+    )
+
     private val _claudeState = MutableLiveData<UiState>(UiState.Loading)
     val claudeState: LiveData<UiState> = _claudeState
 
@@ -71,6 +78,9 @@ class MainViewModel @JvmOverloads constructor(
 
     // Backward-compatible alias — delegates to claudeState for existing MainActivity
     val uiState: LiveData<UiState> = _claudeState
+
+    private val _claudeServiceStatus = MutableLiveData<ServiceStatus?>()
+    val claudeServiceStatus: LiveData<ServiceStatus?> = _claudeServiceStatus
 
     private val claudeSessionManager = SessionManager(application, "claude")
 
@@ -100,6 +110,11 @@ class MainViewModel @JvmOverloads constructor(
             loadUsageData("kimi")
         }
     }
+    private val statusPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+        viewModelScope.launch {
+            loadServiceStatus()
+        }
+    }
 
     private var claudeResetsAtMillis: Long = 0L
     private var claudeWeeklyResetsAtMillis: Long = 0L
@@ -115,9 +130,12 @@ class MainViewModel @JvmOverloads constructor(
             .registerOnSharedPreferenceChangeListener(claudePrefsListener)
         app.getSharedPreferences("usage_prefs_kimi", Context.MODE_PRIVATE)
             .registerOnSharedPreferenceChangeListener(kimiPrefsListener)
+        app.getSharedPreferences(ClaudeStatusWorker.STATUS_PREFS, Context.MODE_PRIVATE)
+            .registerOnSharedPreferenceChangeListener(statusPrefsListener)
 
         checkSession("claude")
         checkSession("kimi")
+        loadServiceStatus()
     }
 
     override fun onCleared() {
@@ -129,6 +147,8 @@ class MainViewModel @JvmOverloads constructor(
             .unregisterOnSharedPreferenceChangeListener(claudePrefsListener)
         app.getSharedPreferences("usage_prefs_kimi", Context.MODE_PRIVATE)
             .unregisterOnSharedPreferenceChangeListener(kimiPrefsListener)
+        app.getSharedPreferences(ClaudeStatusWorker.STATUS_PREFS, Context.MODE_PRIVATE)
+            .unregisterOnSharedPreferenceChangeListener(statusPrefsListener)
     }
 
     fun checkSession(providerId: String = "claude") {
@@ -398,6 +418,21 @@ class MainViewModel @JvmOverloads constructor(
             "claude" -> _claudeState
             "kimi" -> _kimiState
             else -> null
+        }
+    }
+
+    private fun loadServiceStatus() {
+        val prefs = getApplication<Application>()
+            .getSharedPreferences(ClaudeStatusWorker.STATUS_PREFS, Context.MODE_PRIVATE)
+
+        val indicator = prefs.getString(ClaudeStatusWorker.KEY_STATUS_INDICATOR, null)
+        val description = prefs.getString(ClaudeStatusWorker.KEY_STATUS_DESCRIPTION, null)
+        val lastChecked = prefs.getLong(ClaudeStatusWorker.KEY_STATUS_LAST_CHECKED, 0L)
+
+        if (indicator != null && description != null) {
+            _claudeServiceStatus.value = ServiceStatus(indicator, description, lastChecked)
+        } else {
+            _claudeServiceStatus.value = null
         }
     }
 
