@@ -483,11 +483,14 @@ class LoginActivity : AppCompatActivity() {
 
         wv?.evaluateJavascript(
             """
-            (async function() {
+            (function() {
                 try {
-                    var resp = await fetch('https://claude.ai/api/account', {credentials: 'include'});
-                    if (resp.ok) {
-                        var data = await resp.json();
+                    var xhr = new XMLHttpRequest();
+                    xhr.open('GET', 'https://claude.ai/api/account', false);
+                    xhr.withCredentials = true;
+                    xhr.send();
+                    if (xhr.status === 200) {
+                        var data = JSON.parse(xhr.responseText);
                         if (data && data.uuid) return 'logged_in';
                     }
                     return 'not_logged_in';

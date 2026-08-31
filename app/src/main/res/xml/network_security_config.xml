@@ -45,19 +45,19 @@
     </domain-config>
 
     <!--
-      anthropic.com
-      CA: Let's Encrypt (YE2 intermediate). Kept for backwards compatibility.
-      Fetched: 2026-06-24
+      anthropic.com (includes assets-proxy.anthropic.com via includeSubdomains)
+      CA: Let's Encrypt (YE1 intermediate, Root YE, cross-signed by ISRG Root X2)
+      Fetched: 2026-08-31
     -->
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">anthropic.com</domain>
         <pin-set expiration="2027-12-31">
-            <!-- Leaf certificate (anthropic.com) -->
-            <!-- Source: fetched from live TLS cert on 2026-06-24 -->
-            <pin digest="SHA-256">kVF+9P/4y/Q06iaooniYqluxGLrB/g7+KPxebqvny0Q=</pin>
-            <!-- Intermediate CA: Let's Encrypt YE2 -->
-            <!-- Source: fetched from live TLS chain on 2026-06-24 -->
-            <pin digest="SHA-256">s/tdAOmUzd8syaTuqfgGvFcn6DzA5Cmb+Vby1ST+U3Y=</pin>
+            <!-- Intermediate CA: Let's Encrypt YE1 -->
+            <pin digest="SHA-256">brzvtCELCIZUo4sD/qPX0ccRtPsd3DY6RfmxpOU9oB4=</pin>
+            <!-- Root CA: Let's Encrypt Root YE -->
+            <pin digest="SHA-256">sCkq5UWXjg+7mKu9lMhhYF5bGLsy7VI/UNW3tccdR7w=</pin>
+            <!-- Backup root CA: ISRG Root X2 -->
+            <pin digest="SHA-256">diGVwiVYbubAI3RW4hB9xU8e/CH2GnkuvVFZE8zmgzI=</pin>
         </pin-set>
         <trust-anchors>
             <certificates src="system" />

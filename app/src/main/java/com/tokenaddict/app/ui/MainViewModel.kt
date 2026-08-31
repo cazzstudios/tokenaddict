@@ -155,7 +155,12 @@ class MainViewModel @JvmOverloads constructor(
         val state = getStateLiveData(providerId) ?: return
 
         if (providerId == "claude") {
-            when (claudeSessionManager.getSessionState()) {
+            val sessionState = claudeSessionManager.getSessionState()
+            val loggedIn = claudeSessionManager.isLoggedIn()
+            if (sessionState is SessionState.LoggedIn && !loggedIn) {
+                claudeSessionManager.clearSession()
+                state.value = UiState.LoggedOut
+            } else when (sessionState) {
                 is SessionState.LoggedIn -> loadUsageData("claude")
                 SessionState.LoggedOut -> state.value = UiState.LoggedOut
                 else -> state.value = UiState.LoggedOut

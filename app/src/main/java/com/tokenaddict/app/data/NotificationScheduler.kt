@@ -184,7 +184,7 @@ class NotificationScheduler(private val context: Context, private val providerId
                 context.getString(R.string.channel_status_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = context.getString(R.string.channel_status_description)
+                this.description = context.getString(R.string.channel_status_description)
             }
             notificationManager.createNotificationChannel(channel)
         }
