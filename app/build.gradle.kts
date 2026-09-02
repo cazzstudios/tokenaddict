@@ -57,7 +57,7 @@ ktlint {
 dependencies {
     implementation("androidx.core:core:1.15.0")
     implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
 
     // WorkManager for periodic background checks
     implementation("androidx.work:work-runtime-ktx:2.10.0")
