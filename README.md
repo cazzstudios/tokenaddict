@@ -1,6 +1,6 @@
 # Token Addict
 
-Monitors AI usage limits for Claude.ai and Kimi Code. Displays real-time utilization, reset countdowns, and sends notifications when limits are approaching or have been reached.
+Monitors AI usage limits for Claude.ai, Kimi Code, and ChatGPT. Displays real-time utilization, reset countdowns, and sends notifications when limits are approaching or have been reached.
 
 <p align="center">
   <img src="token_addict_screenshot.png" alt="Token Addict screenshot" width="300">
@@ -27,20 +27,24 @@ Monitors AI usage limits for Claude.ai and Kimi Code. Displays real-time utiliza
 
 Token Addict follows an MVVM architecture with manual dependency injection:
 
-- **`data/` layer**: Network calls via OkHttp, session/cookie management, encrypted storage via `EncryptedSharedPreferences`, and OAuth flows for Kimi
+- **`data/` layer**: Network calls via OkHttp, session/cookie management, encrypted storage via `EncryptedSharedPreferences`, and OAuth flows for Kimi. Each provider implements `AiProvider` and is registered in `ProviderRegistry`.
 - **`ui/` layer**: Activities + ViewModels with LiveData and sealed `UiState` classes
-- **`worker/` layer**: WorkManager-based periodic usage checks for both providers
-- **`security/` layer**: Root/emulator/debug detection at startup
+- **`worker/` layer**: WorkManager-based periodic usage checks and service-status polling for each provider
+- **`receiver/` layer**: Boot and reset-alarm broadcast receivers
+- **`security/` layer**: Root/emulator/debug detection at startup, network security config with certificate pinning
 
-The app monitors two AI providers:
+The app monitors three AI providers:
 - **Claude.ai**: Session-based authentication via WebView login + cookie persistence
 - **Kimi Code**: OAuth 2.0 Device Code flow with token refresh
+- **ChatGPT**: Session-based authentication via WebView login + token persistence
+
+Service-status monitoring polls provider status pages every 30 minutes (configurable) and triggers fast-polling on outages.
 
 ## Permissions
 
 | Permission | Purpose |
 |---|---|
-| `INTERNET` | API calls to Claude.ai and Kimi Code |
+| `INTERNET` | API calls to Claude.ai, Kimi Code, and ChatGPT |
 | `SCHEDULE_EXACT_ALARM` | Exact reset countdown notifications |
 | `POST_NOTIFICATIONS` | Usage limit warnings and re-login alerts (Android 13+) |
 | `RECEIVE_BOOT_COMPLETED` | Re-schedule periodic checks after device restart |
@@ -50,12 +54,9 @@ The app monitors two AI providers:
 ## Release Process
 
 1. Update `versionCode` and `versionName` in `app/build.gradle.kts`
-2. Ensure `local.properties` contains `kimi.client.id=<your-client-id>`
-3. Build the release APK:
+2. Build the release APK:
    ```bash
    ./gradlew assembleRelease
    ```
-4. The signed APK is at `app/build/outputs/apk/release/app-release.apk`
-5. Distribute via sideloading or your preferred channel
-
-> **Note**: Debug builds use a placeholder client ID. Release builds require a valid `kimi.client.id` in `local.properties`.
+3. The signed APK is at `app/build/outputs/apk/release/app-release.apk`
+4. Distribute via sideloading or your preferred channel
