@@ -29,6 +29,13 @@
         android:defaultValue="true" />
 
     <SwitchPreferenceCompat
+        android:key="notification_enabled_chatgpt"
+        android:title="@string/notification_enabled_chatgpt_title"
+        android:summary="@string/notification_enabled_chatgpt_summary"
+        android:icon="@drawable/ic_bell"
+        android:defaultValue="true" />
+
+    <SwitchPreferenceCompat
         android:key="notification_sound"
         android:title="@string/notification_sound_title"
         android:summary="@string/notification_sound_summary"

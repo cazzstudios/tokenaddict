@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
@@ -22,6 +26,18 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp">
+
+            <!-- Empty state (shown when all cards are hidden) -->
+            <TextView
+                android:id="@+id/emptyStateText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="80dp"
+                android:gravity="center"
+                android:text="@string/empty_state_message"
+                android:textAppearance="?attr/textAppearanceBodyLarge"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:visibility="gone" />
 
             <!-- ======================== Claude Card ======================== -->
             <com.google.android.material.card.MaterialCardView
@@ -492,7 +508,255 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- ======================== ChatGPT Card ======================== -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/chatgptCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <!-- Provider Title -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/provider_chatgpt"
+                        android:textAppearance="?attr/textAppearanceTitleLarge"
+                        android:textStyle="bold" />
+
+                    <!-- Service Status Indicator -->
+                    <LinearLayout
+                        android:id="@+id/chatgptStatusContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <View
+                            android:id="@+id/chatgptStatusDot"
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            android:background="@drawable/status_dot_operational" />
+
+                        <TextView
+                            android:id="@+id/chatgptStatusText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
+
+                    <!-- Loading State -->
+                    <LinearLayout
+                        android:id="@+id/chatgptLoadingContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+                        <ProgressBar
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:contentDescription="@string/cd_loading" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:text="@string/loading"
+                            android:textAppearance="?attr/textAppearanceBodyLarge" />
+                    </LinearLayout>
+
+                    <!-- Logged Out State -->
+                    <LinearLayout
+                        android:id="@+id/chatgptLoggedOutContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/please_log_in_chatgpt"
+                            android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chatgptLoginButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:backgroundTint="@color/chatgpt_green"
+                            android:minHeight="48dp"
+                            android:text="@string/log_in" />
+                    </LinearLayout>
+
+                    <!-- Usage Data State -->
+                    <LinearLayout
+                        android:id="@+id/chatgptUsageContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="24dp"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <!-- Robot icon + progress bars -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:layoutDirection="ltr"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <!-- Left robot icon -->
+                            <ImageView
+                                android:id="@+id/chatgptRobotIcon"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:layout_gravity="center_vertical"
+                                android:contentDescription="@string/cd_working_robot"
+                                android:src="@drawable/working" />
+
+                            <!-- Center: usage details or countdown -->
+                            <LinearLayout
+                                android:id="@+id/chatgptUsageDetails"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginHorizontal="12dp"
+                                android:orientation="vertical">
+
+                                <!-- 5-hour resets in -->
+                                <TextView
+                                    android:id="@+id/chatgptFiveHourResetsIn"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:textAppearance="?attr/textAppearanceBodyMedium" />
+
+                                <!-- 5-hour progress bar -->
+                                <com.tokenaddict.app.ui.ProgressWithMarkerView
+                                    android:id="@+id/chatgptFiveHourProgress"
+                                    style="?android:attr/progressBarStyleHorizontal"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:max="100"
+                                    android:progressTint="@color/progress_five_hour" />
+
+                                <!-- Weekly progress bar -->
+                                <com.tokenaddict.app.ui.ProgressWithMarkerView
+                                    android:id="@+id/chatgptWeeklyProgress"
+                                    style="?android:attr/progressBarStyleHorizontal"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="8dp"
+                                    android:max="100"
+                                    android:progressTint="@color/progress_weekly" />
+
+                                <!-- Weekly resets in -->
+                                <TextView
+                                    android:id="@+id/chatgptWeeklyResetsIn"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textAppearance="?attr/textAppearanceBodyMedium" />
+                            </LinearLayout>
+
+                            <!-- Hidden placeholder -->
+                            <TextView
+                                android:id="@+id/chatgptLimitCountdown"
+                                android:layout_width="0dp"
+                                android:layout_height="0dp"
+                                android:visibility="gone" />
+
+                            <!-- Short format: HH : MM : SS -->
+                            <include
+                                layout="@layout/countdown_section"
+                                android:id="@+id/chatgpt_countdown_short"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
+                                android:layout_gravity="center_vertical"
+                                android:visibility="gone" />
+
+                            <!-- Long format: DD : HH : MM -->
+                            <include
+                                layout="@layout/countdown_section"
+                                android:id="@+id/chatgpt_countdown_long"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
+                                android:layout_gravity="center_vertical"
+                                android:visibility="gone" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/chatgptLastCheckedText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+
+                        <!-- ChatGPT Action Buttons -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/chatgptRefreshButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:minHeight="48dp"
+                                android:text="@string/refresh_now" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/chatgptLogoutButton"
+                                style="@style/Widget.Material3.Button.OutlinedButton"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:minHeight="48dp"
+                                android:text="@string/logout" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
     </ScrollView>
 
-</LinearLayout>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabConnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/cd_add_provider"
+        app:srcCompat="@drawable/ic_add" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

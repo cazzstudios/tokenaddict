@@ -17,6 +17,7 @@ import androidx.work.WorkManager
 import com.tokenaddict.app.R
 import com.tokenaddict.app.TokenAddictApplication
 import com.tokenaddict.app.data.NotificationScheduler
+import com.tokenaddict.app.worker.ChatGPTUsageWorker
 import com.tokenaddict.app.worker.ClaudeUsageWorker
 import com.tokenaddict.app.worker.KimiUsageWorker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -29,6 +30,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         setupPollingIntervalPreference()
         setupNotificationTogglePreference("notification_enabled_claude", "claude")
         setupNotificationTogglePreference("notification_enabled_kimi", "kimi")
+        setupNotificationTogglePreference("notification_enabled_chatgpt", "chatgpt")
         setupBatteryOptimizationPreference()
     }
 
@@ -148,7 +150,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
             kimiWorkRequest
         )
 
-        arrayOf("claude", "kimi").forEach { providerId ->
+        val chatgptWorkRequest = PeriodicWorkRequestBuilder<ChatGPTUsageWorker>(
+            intervalMinutes, TimeUnit.MINUTES
+        ).setConstraints(
+            androidx.work.Constraints.Builder()
+                .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+                .build()
+        ).build()
+        workManager.enqueueUniquePeriodicWork(
+            "chatgpt_usage_check",
+            ExistingPeriodicWorkPolicy.UPDATE,
+            chatgptWorkRequest
+        )
+
+        arrayOf("claude", "kimi", "chatgpt").forEach { providerId ->
             val scheduler = NotificationScheduler(requireContext(), providerId)
             if (scheduler.hasScheduledNotification()) {
                 val resetTime = scheduler.getScheduledResetTime()

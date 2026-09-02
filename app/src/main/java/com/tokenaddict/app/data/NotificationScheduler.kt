@@ -14,6 +14,7 @@ import androidx.preference.PreferenceManager
 import com.tokenaddict.app.R
 import com.tokenaddict.app.TokenAddictApplication
 import com.tokenaddict.app.receiver.ResetAlarmReceiver
+import com.tokenaddict.app.ui.ChatGPTLoginActivity
 import com.tokenaddict.app.ui.KimiLoginActivity
 import com.tokenaddict.app.ui.LoginActivity
 
@@ -23,26 +24,39 @@ class NotificationScheduler(private val context: Context, private val providerId
         private const val TAG = "NotificationScheduler"
         private const val NOTIFICATION_ID_CLAUDE = 1001
         private const val NOTIFICATION_ID_KIMI = 1002
+        private const val NOTIFICATION_ID_CHATGPT = 1003
         private const val NOTIFICATION_ID_RELOGIN_CLAUDE = 2001
         private const val NOTIFICATION_ID_RELOGIN_KIMI = 2002
+        private const val NOTIFICATION_ID_RELOGIN_CHATGPT = 2003
         private const val NOTIFICATION_ID_STATUS_RESOLVED = 3001
         private const val CHANNEL_ID_RELOGIN = "relogin_channel"
         private const val CHANNEL_ID_STATUS = "status_channel"
         private const val KEY_SCHEDULED_RESET_TIME = "scheduled_reset_time"
         const val PREF_KEY_NOTIFICATION_ENABLED_CLAUDE = "notification_enabled_claude"
         const val PREF_KEY_NOTIFICATION_ENABLED_KIMI = "notification_enabled_kimi"
+        const val PREF_KEY_NOTIFICATION_ENABLED_CHATGPT = "notification_enabled_chatgpt"
     }
 
     private fun getPrefsName(): String = "notification_scheduler_$providerId"
     private fun getAction(): String = "com.tokenaddict.app.RESET_ALARM_${providerId.uppercase()}"
-    private fun getNotificationId(): Int = if (providerId == "kimi") NOTIFICATION_ID_KIMI else NOTIFICATION_ID_CLAUDE
+    private fun getNotificationId(): Int = when (providerId) {
+        "kimi" -> NOTIFICATION_ID_KIMI
+        "chatgpt" -> NOTIFICATION_ID_CHATGPT
+        else -> NOTIFICATION_ID_CLAUDE
+    }
     private fun getRequestCode(): Int = getNotificationId()
 
-    private fun getReloginNotificationId(): Int =
-        if (providerId == "kimi") NOTIFICATION_ID_RELOGIN_KIMI else NOTIFICATION_ID_RELOGIN_CLAUDE
+    private fun getReloginNotificationId(): Int = when (providerId) {
+        "kimi" -> NOTIFICATION_ID_RELOGIN_KIMI
+        "chatgpt" -> NOTIFICATION_ID_RELOGIN_CHATGPT
+        else -> NOTIFICATION_ID_RELOGIN_CLAUDE
+    }
 
-    private fun getLoginActivityClass(): Class<*> =
-        if (providerId == "kimi") KimiLoginActivity::class.java else LoginActivity::class.java
+    private fun getLoginActivityClass(): Class<*> = when (providerId) {
+        "kimi" -> KimiLoginActivity::class.java
+        "chatgpt" -> ChatGPTLoginActivity::class.java
+        else -> LoginActivity::class.java
+    }
 
     private val alarmManager: AlarmManager =
         context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -50,7 +64,11 @@ class NotificationScheduler(private val context: Context, private val providerId
     private val prefs = context.getSharedPreferences(getPrefsName(), Context.MODE_PRIVATE)
 
     private fun isEnabled(): Boolean {
-        val key = if (providerId == "kimi") PREF_KEY_NOTIFICATION_ENABLED_KIMI else PREF_KEY_NOTIFICATION_ENABLED_CLAUDE
+        val key = when (providerId) {
+            "kimi" -> PREF_KEY_NOTIFICATION_ENABLED_KIMI
+            "chatgpt" -> PREF_KEY_NOTIFICATION_ENABLED_CHATGPT
+            else -> PREF_KEY_NOTIFICATION_ENABLED_CLAUDE
+        }
         val defaultPrefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(context)
         return defaultPrefs.getBoolean(key, true)
     }
@@ -146,6 +164,7 @@ class NotificationScheduler(private val context: Context, private val providerId
         }
         when (providerId) {
             "kimi" -> intent.setClass(context, KimiLoginActivity::class.java)
+            "chatgpt" -> intent.setClass(context, ChatGPTLoginActivity::class.java)
             else -> intent.setClass(context, LoginActivity::class.java)
         }
 

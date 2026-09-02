@@ -18,7 +18,8 @@ class NotificationMessageProvider internal constructor(
 
     private val displayNameMap = mapOf(
         "claude" to "Claude",
-        "kimi" to "Kimi"
+        "kimi" to "Kimi",
+        "chatgpt" to "ChatGPT"
     )
 
     private val prefs by lazy {
@@ -65,6 +66,7 @@ class NotificationMessageProvider internal constructor(
     private fun getFallbackMessage(providerId: String): String {
         return when (providerId) {
             "kimi" -> context.getString(R.string.notification_reset_message_kimi)
+            "chatgpt" -> context.getString(R.string.notification_reset_message_chatgpt)
             else -> context.getString(R.string.notification_reset_message)
         }
     }

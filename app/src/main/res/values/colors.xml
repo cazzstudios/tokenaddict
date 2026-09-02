@@ -31,6 +31,9 @@
     <!-- Kimi Branding -->
     <color name="kimi_orange">#FF6B35</color>
 
+    <!-- ChatGPT Branding -->
+    <color name="chatgpt_green">#10A37F</color>
+
     <!-- Progress Bar Colors -->
     <color name="progress_five_hour">#FF2196F3</color>
     <color name="progress_weekly">#FF4CAF50</color>

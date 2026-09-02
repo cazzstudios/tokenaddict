@@ -14,9 +14,11 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.tokenaddict.app.security.SecurityChecker
 import com.tokenaddict.app.security.SecurityStatus
+import com.tokenaddict.app.worker.ChatGPTUsageWorker
 import com.tokenaddict.app.worker.KimiUsageWorker
 import com.tokenaddict.app.worker.ClaudeUsageWorker
 import com.tokenaddict.app.worker.ClaudeStatusWorker
+import com.tokenaddict.app.worker.ChatGPTStatusWorker
 import java.util.concurrent.TimeUnit
 
 class TokenAddictApplication : Application() {
@@ -37,7 +39,9 @@ class TokenAddictApplication : Application() {
         createNotificationChannels()
         schedulePeriodicWork()
         scheduleKimiPeriodicWork()
+        scheduleChatGPTPeriodicWork()
         scheduleClaudeStatusWork()
+        scheduleChatGPTStatusWork()
         checkSecurityEnvironment()
     }
 
@@ -127,6 +131,23 @@ class TokenAddictApplication : Application() {
         )
     }
 
+    private fun scheduleChatGPTPeriodicWork() {
+        val intervalMinutes = getPollingIntervalMinutes()
+        val workRequest = PeriodicWorkRequestBuilder<ChatGPTUsageWorker>(
+            intervalMinutes, TimeUnit.MINUTES
+        ).setConstraints(
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+        ).build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "chatgpt_usage_check",
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
     private fun scheduleClaudeStatusWork() {
         val workRequest = PeriodicWorkRequestBuilder<ClaudeStatusWorker>(
             STATUS_POLLING_INTERVAL_MINUTES, TimeUnit.MINUTES
@@ -138,6 +159,22 @@ class TokenAddictApplication : Application() {
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             ClaudeStatusWorker.NORMAL_POLLING_WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
+    private fun scheduleChatGPTStatusWork() {
+        val workRequest = PeriodicWorkRequestBuilder<ChatGPTStatusWorker>(
+            STATUS_POLLING_INTERVAL_MINUTES, TimeUnit.MINUTES
+        ).setConstraints(
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+        ).build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            ChatGPTStatusWorker.NORMAL_POLLING_WORK_NAME,
             ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )

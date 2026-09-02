@@ -30,7 +30,9 @@ import androidx.lifecycle.ViewModelProvider
 import com.tokenaddict.app.R
 import com.tokenaddict.app.data.model.ClaudeStatusLevel
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class MainActivity : AppCompatActivity() {
 
@@ -56,6 +58,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var claudeStatusDot: View
     private lateinit var claudeStatusText: TextView
 
+    private lateinit var chatgptStatusContainer: LinearLayout
+    private lateinit var chatgptStatusDot: View
+    private lateinit var chatgptStatusText: TextView
+
     private lateinit var kimiLoadingContainer: LinearLayout
     private lateinit var kimiLoggedOutContainer: LinearLayout
     private lateinit var kimiUsageContainer: LinearLayout
@@ -69,6 +75,27 @@ class MainActivity : AppCompatActivity() {
     private lateinit var claudeUsageDetails: LinearLayout
     private lateinit var kimiRobotIcon: ImageView
     private lateinit var kimiUsageDetails: LinearLayout
+
+    private lateinit var chatgptLoadingContainer: LinearLayout
+    private lateinit var chatgptLoggedOutContainer: LinearLayout
+    private lateinit var chatgptUsageContainer: LinearLayout
+    private lateinit var chatgptFiveHourProgress: ProgressWithMarkerView
+    private lateinit var chatgptFiveHourResetsIn: TextView
+    private lateinit var chatgptWeeklyProgress: ProgressWithMarkerView
+    private lateinit var chatgptWeeklyResetsIn: TextView
+    private lateinit var chatgptLastCheckedText: TextView
+    private lateinit var chatgptRobotIcon: ImageView
+    private lateinit var chatgptUsageDetails: LinearLayout
+
+    private lateinit var claudeCard: MaterialCardView
+    private lateinit var kimiCard: MaterialCardView
+    private lateinit var chatgptCard: MaterialCardView
+    private lateinit var fabConnect: FloatingActionButton
+    private lateinit var emptyStateText: android.widget.TextView
+
+    private var claudeUiState: MainViewModel.UiState = MainViewModel.UiState.Loading
+    private var kimiUiState: MainViewModel.UiState = MainViewModel.UiState.Loading
+    private var chatgptUiState: MainViewModel.UiState = MainViewModel.UiState.Loading
 
     // Claude countdown containers
     private lateinit var claudeCountdownShortContainer: LinearLayout
@@ -100,6 +127,21 @@ class MainActivity : AppCompatActivity() {
     private lateinit var kimiLongMinutes: CountdownDigitView
     private lateinit var kimiLongSeconds: CountdownDigitView
 
+    // ChatGPT countdown containers
+    private lateinit var chatgptCountdownShortContainer: LinearLayout
+    private lateinit var chatgptCountdownLongContainer: LinearLayout
+
+    // ChatGPT short digits (HH:MM:SS)
+    private lateinit var chatgptShortHours: CountdownDigitView
+    private lateinit var chatgptShortMinutes: CountdownDigitView
+    private lateinit var chatgptShortSeconds: CountdownDigitView
+
+    // ChatGPT long digits (DD:HH:MM:SS)
+    private lateinit var chatgptLongDays: CountdownDigitView
+    private lateinit var chatgptLongHours: CountdownDigitView
+    private lateinit var chatgptLongMinutes: CountdownDigitView
+    private lateinit var chatgptLongSeconds: CountdownDigitView
+
     private val claudeLoginLauncher = registerForActivityResult(LoginResultContract()) { success ->
         if (success) {
             viewModel.checkSession("claude")
@@ -110,6 +152,13 @@ class MainActivity : AppCompatActivity() {
     private val kimiLoginLauncher = registerForActivityResult(KimiLoginResultContract()) { success ->
         if (success) {
             viewModel.checkSession("kimi")
+            checkPermissionsAfterLogin()
+        }
+    }
+
+    private val chatgptLoginLauncher = registerForActivityResult(ChatGPTLoginResultContract()) { success ->
+        if (success) {
+            viewModel.checkSession("chatgpt")
             checkPermissionsAfterLogin()
         }
     }
@@ -281,6 +330,10 @@ class MainActivity : AppCompatActivity() {
         claudeStatusDot = findViewById(R.id.claudeStatusDot)
         claudeStatusText = findViewById(R.id.claudeStatusText)
 
+        chatgptStatusContainer = findViewById(R.id.chatgptStatusContainer)
+        chatgptStatusDot = findViewById(R.id.chatgptStatusDot)
+        chatgptStatusText = findViewById(R.id.chatgptStatusText)
+
         kimiLoadingContainer = findViewById(R.id.kimiLoadingContainer)
         kimiLoggedOutContainer = findViewById(R.id.kimiLoggedOutContainer)
         kimiUsageContainer = findViewById(R.id.kimiUsageContainer)
@@ -325,6 +378,40 @@ class MainActivity : AppCompatActivity() {
         kimiLongHours = kimiLongInclude.findViewById(R.id.hours_digit)
         kimiLongMinutes = kimiLongInclude.findViewById(R.id.minutes_digit)
         kimiLongSeconds = kimiLongInclude.findViewById(R.id.seconds_digit)
+
+        chatgptLoadingContainer = findViewById(R.id.chatgptLoadingContainer)
+        chatgptLoggedOutContainer = findViewById(R.id.chatgptLoggedOutContainer)
+        chatgptUsageContainer = findViewById(R.id.chatgptUsageContainer)
+        chatgptFiveHourProgress = findViewById(R.id.chatgptFiveHourProgress)
+        chatgptFiveHourResetsIn = findViewById(R.id.chatgptFiveHourResetsIn)
+        chatgptWeeklyProgress = findViewById(R.id.chatgptWeeklyProgress)
+        chatgptWeeklyResetsIn = findViewById(R.id.chatgptWeeklyResetsIn)
+        chatgptLastCheckedText = findViewById(R.id.chatgptLastCheckedText)
+        chatgptRobotIcon = findViewById(R.id.chatgptRobotIcon)
+        chatgptUsageDetails = findViewById(R.id.chatgptUsageDetails)
+
+        // ChatGPT short countdown (include root)
+        val chatgptShortInclude = findViewById<LinearLayout>(R.id.chatgpt_countdown_short)
+        chatgptCountdownShortContainer = chatgptShortInclude
+        chatgptShortHours = chatgptShortInclude.findViewById(R.id.hours_digit)
+        chatgptShortMinutes = chatgptShortInclude.findViewById(R.id.minutes_digit)
+        chatgptShortSeconds = chatgptShortInclude.findViewById(R.id.seconds_digit)
+
+        // ChatGPT long countdown (include root)
+        val chatgptLongInclude = findViewById<LinearLayout>(R.id.chatgpt_countdown_long)
+        chatgptCountdownLongContainer = chatgptLongInclude
+        chatgptLongDays = chatgptLongInclude.findViewById(R.id.days_digit)
+        chatgptLongHours = chatgptLongInclude.findViewById(R.id.hours_digit)
+        chatgptLongMinutes = chatgptLongInclude.findViewById(R.id.minutes_digit)
+        chatgptLongSeconds = chatgptLongInclude.findViewById(R.id.seconds_digit)
+
+        claudeCard = findViewById(R.id.claudeCard)
+        kimiCard = findViewById(R.id.kimiCard)
+        chatgptCard = findViewById(R.id.chatgptCard)
+        fabConnect = findViewById(R.id.fabConnect)
+        emptyStateText = findViewById(R.id.emptyStateText)
+
+        fabConnect.setOnClickListener { showConnectDialog() }
     }
 
     private fun setupListeners() {
@@ -347,27 +434,55 @@ class MainActivity : AppCompatActivity() {
         findViewById<MaterialButton>(R.id.kimiLogoutButton).setOnClickListener {
             viewModel.logout("kimi")
         }
+
+        findViewById<MaterialButton>(R.id.chatgptLoginButton).setOnClickListener {
+            chatgptLoginLauncher.launch(Unit)
+        }
+        findViewById<MaterialButton>(R.id.chatgptRefreshButton).setOnClickListener {
+            viewModel.refresh("chatgpt")
+        }
+        findViewById<MaterialButton>(R.id.chatgptLogoutButton).setOnClickListener {
+            viewModel.logout("chatgpt")
+        }
     }
 
     private fun observeUiState() {
         viewModel.claudeState.observe(this) { state ->
+            claudeUiState = state
             when (state) {
                 is MainViewModel.UiState.Loading -> showClaudeLoading()
                 is MainViewModel.UiState.LoggedOut -> showClaudeLoggedOut()
                 is MainViewModel.UiState.UsageData -> showClaudeUsageData(state)
             }
+            updateCardVisibilities()
         }
 
         viewModel.kimiState.observe(this) { state ->
+            kimiUiState = state
             when (state) {
                 is MainViewModel.UiState.Loading -> showKimiLoading()
                 is MainViewModel.UiState.LoggedOut -> showKimiLoggedOut()
                 is MainViewModel.UiState.UsageData -> showKimiUsageData(state)
             }
+            updateCardVisibilities()
+        }
+
+        viewModel.chatgptState.observe(this) { state ->
+            chatgptUiState = state
+            when (state) {
+                is MainViewModel.UiState.Loading -> showChatGPTLoading()
+                is MainViewModel.UiState.LoggedOut -> showChatGPTLoggedOut()
+                is MainViewModel.UiState.UsageData -> showChatGPTUsageData(state)
+            }
+            updateCardVisibilities()
         }
 
         viewModel.claudeServiceStatus.observe(this) { status ->
             updateServiceStatusUI(status)
+        }
+
+        viewModel.chatgptServiceStatus.observe(this) { status ->
+            updateChatGPTServiceStatusUI(status)
         }
     }
 
@@ -502,6 +617,112 @@ class MainActivity : AppCompatActivity() {
         kimiLastCheckedText.text = getString(R.string.last_checked, data.lastChecked)
     }
 
+    private fun showChatGPTLoading() {
+        chatgptLoadingContainer.visibility = View.VISIBLE
+        chatgptLoggedOutContainer.visibility = View.GONE
+        chatgptUsageContainer.visibility = View.GONE
+    }
+
+    private fun showChatGPTLoggedOut() {
+        chatgptLoadingContainer.visibility = View.GONE
+        chatgptLoggedOutContainer.visibility = View.VISIBLE
+        chatgptUsageContainer.visibility = View.GONE
+    }
+
+    private fun showChatGPTUsageData(data: MainViewModel.UiState.UsageData) {
+        chatgptLoadingContainer.visibility = View.GONE
+        chatgptLoggedOutContainer.visibility = View.GONE
+        chatgptUsageContainer.visibility = View.VISIBLE
+
+        val fiveHourPercent = data.utilization.toInt()
+        chatgptFiveHourProgress.progress = fiveHourPercent
+        chatgptFiveHourProgress.markerPosition = computeMarkerPosition(
+            data.resetsAtMillis, FIVE_HOUR_DURATION_MS, data.isReset
+        )
+
+        chatgptFiveHourResetsIn.text = if (data.timeRemaining.isNotEmpty() && data.timeRemaining != getString(R.string.n_a)) {
+            buildResetLabel("$fiveHourPercent%", data.timeRemaining)
+        } else {
+            "$fiveHourPercent%"
+        }
+
+        val weeklyPercent = data.weeklyUtilization.toInt()
+        chatgptWeeklyProgress.progress = weeklyPercent
+        chatgptWeeklyProgress.markerPosition = computeMarkerPosition(
+            data.weeklyResetsAtMillis, WEEKLY_DURATION_MS, data.weeklyIsReset
+        )
+
+        chatgptWeeklyResetsIn.text = if (data.weeklyResetsIn.isNotEmpty() && data.weeklyResetsIn != getString(R.string.n_a)) {
+            buildResetLabel("$weeklyPercent%", data.weeklyResetsIn)
+        } else {
+            "$weeklyPercent%"
+        }
+
+        updateCountdownDisplay(
+            robotIcon = chatgptRobotIcon,
+            usageDetails = chatgptUsageDetails,
+            countdownShortContainer = chatgptCountdownShortContainer,
+            countdownLongContainer = chatgptCountdownLongContainer,
+            shortHours = chatgptShortHours,
+            shortMinutes = chatgptShortMinutes,
+            shortSeconds = chatgptShortSeconds,
+            longDays = chatgptLongDays,
+            longHours = chatgptLongHours,
+            longMinutes = chatgptLongMinutes,
+            longSeconds = chatgptLongSeconds,
+            hasReachedLimit = data.hasReachedLimit,
+            countdownText = data.limitCountdownText,
+            hasDays = data.countdownHasDays
+        )
+
+        chatgptLastCheckedText.text = getString(R.string.last_checked, data.lastChecked)
+    }
+
+    private fun updateCardVisibilities() {
+        val claudeHidden = claudeUiState is MainViewModel.UiState.LoggedOut
+        val kimiHidden = kimiUiState is MainViewModel.UiState.LoggedOut
+        val chatgptHidden = chatgptUiState is MainViewModel.UiState.LoggedOut
+
+        claudeCard.visibility = if (claudeHidden) View.GONE else View.VISIBLE
+        kimiCard.visibility = if (kimiHidden) View.GONE else View.VISIBLE
+        chatgptCard.visibility = if (chatgptHidden) View.GONE else View.VISIBLE
+
+        val allHidden = claudeHidden && kimiHidden && chatgptHidden
+        emptyStateText.visibility = if (allHidden) View.VISIBLE else View.GONE
+
+        val anyLoggedOut = claudeHidden || kimiHidden || chatgptHidden
+        fabConnect.visibility = if (anyLoggedOut) View.VISIBLE else View.GONE
+    }
+
+    private fun showConnectDialog() {
+        val providers = mutableListOf<Pair<String, Int>>()
+        if (claudeUiState is MainViewModel.UiState.LoggedOut) {
+            providers.add("claude" to R.string.connect_claude)
+        }
+        if (kimiUiState is MainViewModel.UiState.LoggedOut) {
+            providers.add("kimi" to R.string.connect_kimi)
+        }
+        if (chatgptUiState is MainViewModel.UiState.LoggedOut) {
+            providers.add("chatgpt" to R.string.connect_chatgpt)
+        }
+
+        if (providers.isEmpty()) return
+
+        val labels = providers.map { getString(it.second) }.toTypedArray()
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.connect_provider_title)
+            .setItems(labels) { _, which ->
+                val providerId = providers[which].first
+                when (providerId) {
+                    "claude" -> claudeLoginLauncher.launch(Unit)
+                    "kimi" -> kimiLoginLauncher.launch(Unit)
+                    "chatgpt" -> chatgptLoginLauncher.launch(Unit)
+                }
+            }
+            .show()
+    }
+
     private fun updateServiceStatusUI(status: MainViewModel.ServiceStatus?) {
         if (status == null) {
             claudeStatusContainer.visibility = View.GONE
@@ -535,6 +756,41 @@ class MainActivity : AppCompatActivity() {
 
         claudeStatusText.text = statusText
         claudeStatusDot.setBackgroundResource(dotDrawable)
+    }
+
+    private fun updateChatGPTServiceStatusUI(status: MainViewModel.ServiceStatus?) {
+        if (status == null) {
+            chatgptStatusContainer.visibility = View.GONE
+            return
+        }
+
+        chatgptStatusContainer.visibility = View.VISIBLE
+
+        val level = ClaudeStatusLevel.fromIndicator(status.indicator)
+        val statusText: String
+        val dotDrawable: Int
+
+        when (level) {
+            ClaudeStatusLevel.NONE -> {
+                statusText = getString(R.string.status_operational)
+                dotDrawable = R.drawable.status_dot_operational
+            }
+            ClaudeStatusLevel.MINOR -> {
+                statusText = getString(R.string.status_degraded)
+                dotDrawable = R.drawable.status_dot_degraded
+            }
+            ClaudeStatusLevel.MAJOR -> {
+                statusText = getString(R.string.status_outage)
+                dotDrawable = R.drawable.status_dot_outage
+            }
+            ClaudeStatusLevel.CRITICAL -> {
+                statusText = getString(R.string.status_major_outage)
+                dotDrawable = R.drawable.status_dot_outage
+            }
+        }
+
+        chatgptStatusText.text = statusText
+        chatgptStatusDot.setBackgroundResource(dotDrawable)
     }
 
     private fun updateCountdownDisplay(
@@ -651,12 +907,22 @@ class MainActivity : AppCompatActivity() {
         kimiLongHours.animate().cancel()
         kimiLongMinutes.animate().cancel()
         kimiLongSeconds.animate().cancel()
+        chatgptShortHours.animate().cancel()
+        chatgptShortMinutes.animate().cancel()
+        chatgptShortSeconds.animate().cancel()
+        chatgptLongDays.animate().cancel()
+        chatgptLongHours.animate().cancel()
+        chatgptLongMinutes.animate().cancel()
+        chatgptLongSeconds.animate().cancel()
         claudeUsageDetails.animate().cancel()
         kimiUsageDetails.animate().cancel()
+        chatgptUsageDetails.animate().cancel()
         claudeCountdownShortContainer.animate().cancel()
         claudeCountdownLongContainer.animate().cancel()
         kimiCountdownShortContainer.animate().cancel()
         kimiCountdownLongContainer.animate().cancel()
+        chatgptCountdownShortContainer.animate().cancel()
+        chatgptCountdownLongContainer.animate().cancel()
     }
 
     private fun buildResetLabel(percentage: String, timeRemaining: String): SpannableString {

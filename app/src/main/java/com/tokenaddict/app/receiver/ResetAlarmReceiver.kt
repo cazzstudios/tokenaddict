@@ -15,6 +15,7 @@ import com.tokenaddict.app.R
 import com.tokenaddict.app.data.NotificationMessageProvider
 import com.tokenaddict.app.data.NotificationScheduler
 import com.tokenaddict.app.ui.MainActivity
+import com.tokenaddict.app.worker.ChatGPTUsageWorker
 import com.tokenaddict.app.worker.ClaudeUsageWorker
 import com.tokenaddict.app.worker.KimiUsageWorker
 
@@ -25,8 +26,10 @@ class ResetAlarmReceiver : BroadcastReceiver() {
     companion object {
         private const val NOTIFICATION_ID_CLAUDE = 1001
         private const val NOTIFICATION_ID_KIMI = 1002
+        private const val NOTIFICATION_ID_CHATGPT = 1003
         private const val ACTION_SUFFIX_CLAUDE = "RESET_ALARM_CLAUDE"
         private const val ACTION_SUFFIX_KIMI = "RESET_ALARM_KIMI"
+        private const val ACTION_SUFFIX_CHATGPT = "RESET_ALARM_CHATGPT"
 
         @JvmStatic
         fun shouldNotify(
@@ -51,20 +54,29 @@ class ResetAlarmReceiver : BroadcastReceiver() {
         val providerId = when {
             action.endsWith(ACTION_SUFFIX_CLAUDE) -> "claude"
             action.endsWith(ACTION_SUFFIX_KIMI) -> "kimi"
+            action.endsWith(ACTION_SUFFIX_CHATGPT) -> "chatgpt"
             else -> "claude"
         }
 
-        val enabledKey = if (providerId == "kimi") {
-            NotificationScheduler.PREF_KEY_NOTIFICATION_ENABLED_KIMI
-        } else {
-            NotificationScheduler.PREF_KEY_NOTIFICATION_ENABLED_CLAUDE
+        val enabledKey = when (providerId) {
+            "kimi" -> NotificationScheduler.PREF_KEY_NOTIFICATION_ENABLED_KIMI
+            "chatgpt" -> NotificationScheduler.PREF_KEY_NOTIFICATION_ENABLED_CHATGPT
+            else -> NotificationScheduler.PREF_KEY_NOTIFICATION_ENABLED_CLAUDE
         }
         val notificationsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
             .getBoolean(enabledKey, true)
 
-        val notificationId = if (providerId == "kimi") NOTIFICATION_ID_KIMI else NOTIFICATION_ID_CLAUDE
+        val notificationId = when (providerId) {
+            "kimi" -> NOTIFICATION_ID_KIMI
+            "chatgpt" -> NOTIFICATION_ID_CHATGPT
+            else -> NOTIFICATION_ID_CLAUDE
+        }
 
-        val prefsName = if (providerId == "kimi") "usage_prefs_kimi" else "usage_prefs"
+        val prefsName = when (providerId) {
+            "kimi" -> "usage_prefs_kimi"
+            "chatgpt" -> "usage_prefs_chatgpt"
+            else -> "usage_prefs"
+        }
         val prefs = context.getSharedPreferences(prefsName, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
         val resetsAt = prefs.getLong("resets_at", 0L)
@@ -108,10 +120,10 @@ class ResetAlarmReceiver : BroadcastReceiver() {
         // Defer WorkManager enqueue off the main thread — BroadcastReceiver.onReceive()
         // has a strict ~10s ANR limit and WorkManager init/enqueue can block.
         Handler(context.mainLooper).post {
-            val workRequest = if (providerId == "kimi") {
-                OneTimeWorkRequestBuilder<KimiUsageWorker>().build()
-            } else {
-                OneTimeWorkRequestBuilder<ClaudeUsageWorker>().build()
+            val workRequest = when (providerId) {
+                "kimi" -> OneTimeWorkRequestBuilder<KimiUsageWorker>().build()
+                "chatgpt" -> OneTimeWorkRequestBuilder<ChatGPTUsageWorker>().build()
+                else -> OneTimeWorkRequestBuilder<ClaudeUsageWorker>().build()
             }
             WorkManager.getInstance(context).enqueue(workRequest)
         }

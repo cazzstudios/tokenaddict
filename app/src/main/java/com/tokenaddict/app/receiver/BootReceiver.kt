@@ -14,7 +14,7 @@ class BootReceiver : BroadcastReceiver() {
     }
 
     private fun rescheduleAlarms(context: Context) {
-        for (providerId in listOf("claude", "kimi")) {
+        for (providerId in listOf("claude", "kimi", "chatgpt")) {
             val scheduler = NotificationScheduler(context, providerId)
             if (scheduler.hasScheduledNotification()) {
                 val resetTime = scheduler.getScheduledResetTime()

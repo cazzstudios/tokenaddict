@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.tokenaddict.app.data.ChatGPTSessionManager
 import com.tokenaddict.app.data.KimiOAuthManager
 import com.tokenaddict.app.data.KimiTokenManager
 import com.tokenaddict.app.data.NotificationScheduler
@@ -20,8 +21,10 @@ import com.tokenaddict.app.data.SessionManager
 import com.tokenaddict.app.data.HttpConfig
 import com.tokenaddict.app.data.model.SessionState
 import com.tokenaddict.app.worker.ClaudeUsageWorker
+import com.tokenaddict.app.worker.ChatGPTUsageWorker
 import com.tokenaddict.app.worker.KimiUsageWorker
 import com.tokenaddict.app.worker.ClaudeStatusWorker
+import com.tokenaddict.app.worker.ChatGPTStatusWorker
 import com.google.gson.Gson
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -76,11 +79,17 @@ class MainViewModel @JvmOverloads constructor(
     private val _kimiState = MutableLiveData<UiState>(UiState.Loading)
     val kimiState: LiveData<UiState> = _kimiState
 
+    private val _chatgptState = MutableLiveData<UiState>(UiState.Loading)
+    val chatgptState: LiveData<UiState> = _chatgptState
+
     // Backward-compatible alias — delegates to claudeState for existing MainActivity
     val uiState: LiveData<UiState> = _claudeState
 
     private val _claudeServiceStatus = MutableLiveData<ServiceStatus?>()
     val claudeServiceStatus: LiveData<ServiceStatus?> = _claudeServiceStatus
+
+    private val _chatgptServiceStatus = MutableLiveData<ServiceStatus?>()
+    val chatgptServiceStatus: LiveData<ServiceStatus?> = _chatgptServiceStatus
 
     private val claudeSessionManager = SessionManager(application, "claude")
 
@@ -100,6 +109,8 @@ class MainViewModel @JvmOverloads constructor(
         }
     }
 
+    private val chatgptSessionManager = ChatGPTSessionManager(application)
+
     private val claudePrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
         viewModelScope.launch {
             loadUsageData("claude")
@@ -110,9 +121,19 @@ class MainViewModel @JvmOverloads constructor(
             loadUsageData("kimi")
         }
     }
+    private val chatgptPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+        viewModelScope.launch {
+            loadUsageData("chatgpt")
+        }
+    }
     private val statusPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
         viewModelScope.launch {
             loadServiceStatus()
+        }
+    }
+    private val chatgptStatusPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+        viewModelScope.launch {
+            loadChatGPTServiceStatus()
         }
     }
 
@@ -120,8 +141,11 @@ class MainViewModel @JvmOverloads constructor(
     private var claudeWeeklyResetsAtMillis: Long = 0L
     private var kimiResetsAtMillis: Long = 0L
     private var kimiWeeklyResetsAtMillis: Long = 0L
+    private var chatgptResetsAtMillis: Long = 0L
+    private var chatgptWeeklyResetsAtMillis: Long = 0L
     private var claudeCountdownJob: Job? = null
     private var kimiCountdownJob: Job? = null
+    private var chatgptCountdownJob: Job? = null
     private var isForeground = true
 
     init {
@@ -130,25 +154,36 @@ class MainViewModel @JvmOverloads constructor(
             .registerOnSharedPreferenceChangeListener(claudePrefsListener)
         app.getSharedPreferences("usage_prefs_kimi", Context.MODE_PRIVATE)
             .registerOnSharedPreferenceChangeListener(kimiPrefsListener)
+        app.getSharedPreferences("usage_prefs_chatgpt", Context.MODE_PRIVATE)
+            .registerOnSharedPreferenceChangeListener(chatgptPrefsListener)
         app.getSharedPreferences(ClaudeStatusWorker.STATUS_PREFS, Context.MODE_PRIVATE)
             .registerOnSharedPreferenceChangeListener(statusPrefsListener)
+        app.getSharedPreferences(ChatGPTStatusWorker.STATUS_PREFS, Context.MODE_PRIVATE)
+            .registerOnSharedPreferenceChangeListener(chatgptStatusPrefsListener)
 
         checkSession("claude")
         checkSession("kimi")
+        checkSession("chatgpt")
         loadServiceStatus()
+        loadChatGPTServiceStatus()
     }
 
     override fun onCleared() {
         super.onCleared()
         stopCountdownTimer("claude")
         stopCountdownTimer("kimi")
+        stopCountdownTimer("chatgpt")
         val app = getApplication<Application>()
         app.getSharedPreferences("usage_prefs", Context.MODE_PRIVATE)
             .unregisterOnSharedPreferenceChangeListener(claudePrefsListener)
         app.getSharedPreferences("usage_prefs_kimi", Context.MODE_PRIVATE)
             .unregisterOnSharedPreferenceChangeListener(kimiPrefsListener)
+        app.getSharedPreferences("usage_prefs_chatgpt", Context.MODE_PRIVATE)
+            .unregisterOnSharedPreferenceChangeListener(chatgptPrefsListener)
         app.getSharedPreferences(ClaudeStatusWorker.STATUS_PREFS, Context.MODE_PRIVATE)
             .unregisterOnSharedPreferenceChangeListener(statusPrefsListener)
+        app.getSharedPreferences(ChatGPTStatusWorker.STATUS_PREFS, Context.MODE_PRIVATE)
+            .unregisterOnSharedPreferenceChangeListener(chatgptStatusPrefsListener)
     }
 
     fun checkSession(providerId: String = "claude") {
@@ -171,6 +206,12 @@ class MainViewModel @JvmOverloads constructor(
                 state.value = UiState.LoggedOut
             } else {
                 loadUsageData("kimi")
+            }
+        } else if (providerId == "chatgpt") {
+            if (!chatgptSessionManager.isLoggedIn()) {
+                state.value = UiState.LoggedOut
+            } else {
+                loadUsageData("chatgpt")
             }
         }
     }
@@ -208,6 +249,22 @@ class MainViewModel @JvmOverloads constructor(
             }
             workLiveData.observeForever(observer)
         }
+        if (providerId == null || providerId == "chatgpt") {
+            _chatgptState.value = UiState.Loading
+            val workRequest = OneTimeWorkRequestBuilder<ChatGPTUsageWorker>().build()
+            val workManager = WorkManager.getInstance(getApplication())
+            workManager.enqueue(workRequest)
+            val workLiveData = workManager.getWorkInfoByIdLiveData(workRequest.id)
+            val observer = object : Observer<WorkInfo?> {
+                override fun onChanged(workInfo: WorkInfo?) {
+                    if (workInfo == null || workInfo.state.isFinished) {
+                        checkSession("chatgpt")
+                        workLiveData.removeObserver(this)
+                    }
+                }
+            }
+            workLiveData.observeForever(observer)
+        }
     }
 
     fun logout(providerId: String = "claude") {
@@ -216,6 +273,9 @@ class MainViewModel @JvmOverloads constructor(
             NotificationScheduler(getApplication(), "claude").cancelResetNotification()
         } else if (providerId == "kimi") {
             kimiTokenManager.clearTokens()
+        } else if (providerId == "chatgpt") {
+            chatgptSessionManager.clearSession()
+            NotificationScheduler(getApplication(), "chatgpt").cancelResetNotification()
         }
         getStateLiveData(providerId)?.value = UiState.LoggedOut
     }
@@ -252,7 +312,12 @@ class MainViewModel @JvmOverloads constructor(
     }
 
     private fun startCountdownTimer(providerId: String) {
-        val jobRef = if (providerId == "claude") claudeCountdownJob else kimiCountdownJob
+        val jobRef = when (providerId) {
+            "claude" -> claudeCountdownJob
+            "kimi" -> kimiCountdownJob
+            "chatgpt" -> chatgptCountdownJob
+            else -> null
+        }
         jobRef?.cancel()
         val newJob = viewModelScope.launch {
             while (isActive) {
@@ -261,8 +326,11 @@ class MainViewModel @JvmOverloads constructor(
                 updateCountdown(providerId)
             }
         }
-        if (providerId == "claude") claudeCountdownJob = newJob
-        else kimiCountdownJob = newJob
+        when (providerId) {
+            "claude" -> claudeCountdownJob = newJob
+            "kimi" -> kimiCountdownJob = newJob
+            "chatgpt" -> chatgptCountdownJob = newJob
+        }
     }
 
     private fun updateCountdown(providerId: String) {
@@ -272,8 +340,18 @@ class MainViewModel @JvmOverloads constructor(
             stopCountdownTimer(providerId)
             return
         }
-        val fiveHourMillis = if (providerId == "claude") claudeResetsAtMillis else kimiResetsAtMillis
-        val weeklyMillis = if (providerId == "claude") claudeWeeklyResetsAtMillis else kimiWeeklyResetsAtMillis
+        val fiveHourMillis = when (providerId) {
+            "claude" -> claudeResetsAtMillis
+            "kimi" -> kimiResetsAtMillis
+            "chatgpt" -> chatgptResetsAtMillis
+            else -> 0L
+        }
+        val weeklyMillis = when (providerId) {
+            "claude" -> claudeWeeklyResetsAtMillis
+            "kimi" -> kimiWeeklyResetsAtMillis
+            "chatgpt" -> chatgptWeeklyResetsAtMillis
+            else -> 0L
+        }
         val fiveHourReached = state.utilization >= 100.0 && fiveHourMillis > System.currentTimeMillis()
         val weeklyReached = state.weeklyUtilization >= 100.0 && weeklyMillis > System.currentTimeMillis()
         val effectiveMillis = maxOf(
@@ -286,16 +364,24 @@ class MainViewModel @JvmOverloads constructor(
     }
 
     private fun stopCountdownTimer(providerId: String) {
-        val job = if (providerId == "claude") claudeCountdownJob else kimiCountdownJob
+        val job = when (providerId) {
+            "claude" -> claudeCountdownJob
+            "kimi" -> kimiCountdownJob
+            "chatgpt" -> chatgptCountdownJob
+            else -> null
+        }
         job?.cancel()
-        if (providerId == "claude") claudeCountdownJob = null
-        else kimiCountdownJob = null
+        when (providerId) {
+            "claude" -> claudeCountdownJob = null
+            "kimi" -> kimiCountdownJob = null
+            "chatgpt" -> chatgptCountdownJob = null
+        }
     }
 
     fun onForegroundChanged(isForeground: Boolean) {
         this.isForeground = isForeground
         if (isForeground) {
-            listOf("claude", "kimi").forEach { providerId ->
+            listOf("claude", "kimi", "chatgpt").forEach { providerId ->
                 val liveData = getStateLiveData(providerId) ?: return@forEach
                 val state = liveData.value
                 when (state) {
@@ -305,9 +391,6 @@ class MainViewModel @JvmOverloads constructor(
                         }
                     }
                     is UiState.Loading -> {
-                        // WorkManager worker may have been delayed (Doze/battery).
-                        // Re-check SharedPreferences in case the worker wrote data
-                        // while the app was paused, or re-trigger refresh if not.
                         loadUsageData(providerId)
                     }
                     else -> { /* LoggedOut or null — nothing to do */ }
@@ -316,11 +399,17 @@ class MainViewModel @JvmOverloads constructor(
         } else {
             stopCountdownTimer("claude")
             stopCountdownTimer("kimi")
+            stopCountdownTimer("chatgpt")
         }
     }
 
     private fun loadUsageData(providerId: String) {
-        val prefsName = if (providerId == "claude") "usage_prefs" else "usage_prefs_kimi"
+        val prefsName = when (providerId) {
+            "claude" -> "usage_prefs"
+            "kimi" -> "usage_prefs_kimi"
+            "chatgpt" -> "usage_prefs_chatgpt"
+            else -> "usage_prefs"
+        }
         val prefs = getApplication<Application>()
             .getSharedPreferences(prefsName, Context.MODE_PRIVATE)
 
@@ -340,9 +429,12 @@ class MainViewModel @JvmOverloads constructor(
         if (providerId == "claude") {
             claudeResetsAtMillis = resetsAtMillis
             claudeWeeklyResetsAtMillis = weeklyResetsAtMillis
-        } else {
+        } else if (providerId == "kimi") {
             kimiResetsAtMillis = resetsAtMillis
             kimiWeeklyResetsAtMillis = weeklyResetsAtMillis
+        } else {
+            chatgptResetsAtMillis = resetsAtMillis
+            chatgptWeeklyResetsAtMillis = weeklyResetsAtMillis
         }
 
         val fiveHourReached = utilization >= 100.0 && resetsAtMillis > System.currentTimeMillis()
@@ -422,6 +514,7 @@ class MainViewModel @JvmOverloads constructor(
         return when (providerId) {
             "claude" -> _claudeState
             "kimi" -> _kimiState
+            "chatgpt" -> _chatgptState
             else -> null
         }
     }
@@ -441,6 +534,22 @@ class MainViewModel @JvmOverloads constructor(
         }
     }
 
+    private fun loadChatGPTServiceStatus() {
+        val prefs = getApplication<Application>()
+            .getSharedPreferences(ChatGPTStatusWorker.STATUS_PREFS, Context.MODE_PRIVATE)
+
+        val indicator = prefs.getString(ChatGPTStatusWorker.KEY_STATUS_INDICATOR, null)
+        val description = prefs.getString(ChatGPTStatusWorker.KEY_STATUS_DESCRIPTION, null)
+        val lastChecked = prefs.getLong(ChatGPTStatusWorker.KEY_STATUS_LAST_CHECKED, 0L)
+
+        if (indicator != null && description != null) {
+            _chatgptServiceStatus.value = ServiceStatus(indicator, description, lastChecked)
+        } else {
+            _chatgptServiceStatus.value = null
+        }
+    }
+
     internal fun getClaudeState(): MutableLiveData<UiState> = _claudeState
     internal fun getKimiState(): MutableLiveData<UiState> = _kimiState
+    internal fun getChatGPTState(): MutableLiveData<UiState> = _chatgptState
 }

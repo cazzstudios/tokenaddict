@@ -14,6 +14,7 @@
     <string name="notification_reset_title">Usage Limit Reset</string>
     <string name="notification_reset_message">Your Claude usage limit has been reset. Tap to check.</string>
     <string name="notification_reset_message_kimi">Kimi usage limit has been reset. Tap to check.</string>
+    <string name="notification_reset_message_chatgpt">ChatGPT usage limit has been reset. Tap to check.</string>
     <string name="session_expired_title">Session Expired</string>
     <string name="session_expired_message">Your session has expired — tap to re-login.</string>
     <string name="status_resolved_title">Claude Service Restored</string>
@@ -44,8 +45,10 @@
     <string name="loading">Loading\u2026</string>
     <string name="provider_claude">Claude</string>
     <string name="provider_kimi">Kimi Code</string>
+    <string name="provider_chatgpt">ChatGPT</string>
     <string name="please_log_in">Please log in to Claude.ai</string>
     <string name="please_log_in_kimi">Please log in to Kimi Code</string>
+    <string name="please_log_in_chatgpt">Please log in to ChatGPT</string>
     <string name="log_in">Log In</string>
     <string name="refresh_now">Refresh Now</string>
     <string name="logout">Logout</string>
@@ -83,6 +86,8 @@
     <string name="notification_enabled_claude_summary">Notify when Claude usage limit resets</string>
     <string name="notification_enabled_kimi_title">Kimi Reset Notifications</string>
     <string name="notification_enabled_kimi_summary">Notify when Kimi usage limit resets</string>
+    <string name="notification_enabled_chatgpt_title">ChatGPT Reset Notifications</string>
+    <string name="notification_enabled_chatgpt_summary">Notify when ChatGPT usage limit resets</string>
     <string name="battery_optimization_title">Battery Optimization</string>
     <string name="battery_optimization_summary">Disable battery optimization for reliable notifications</string>
     <string name="battery_optimization_dialog_title">Disable Battery Optimization</string>
@@ -124,4 +129,12 @@
     <string name="kimi_login_title">Log in to Kimi Code</string>
     <string name="kimi_retry">Try Again</string>
     <string name="kimi_webview_helper">If the submit button is not visible, press Enter on the keyboard.</string>
+
+    <!-- FAB / Connect Provider -->
+    <string name="connect_provider_title">Connect a provider</string>
+    <string name="connect_claude">Claude</string>
+    <string name="connect_kimi">Kimi Code</string>
+    <string name="connect_chatgpt">ChatGPT</string>
+    <string name="empty_state_message">No active providers.\nTap + to connect one.</string>
+    <string name="cd_add_provider">Connect a provider</string>
 </resources>
