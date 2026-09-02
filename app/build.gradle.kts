@@ -60,7 +60,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
 
     // WorkManager for periodic background checks
-    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation("androidx.work:work-runtime-ktx:2.11.2")
 
     // OkHttp for API calls
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
@@ -91,7 +91,7 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
     testImplementation("org.mockito:mockito-inline:5.2.0")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
-    testImplementation("androidx.work:work-testing:2.10.0")
+    testImplementation("androidx.work:work-testing:2.11.2")
     testImplementation("org.robolectric:robolectric:4.12.1")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
